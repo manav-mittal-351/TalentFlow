@@ -23,10 +23,12 @@ import { env } from '../config/env.js';
  */
 // eslint-disable-next-line no-unused-vars
 export const errorHandler = (err, req, res, next) => {
-  // Only log genuine server errors (5xx) as unexpected — 4xx errors are
-  // intentional business logic (wrong password, duplicate email, etc.) and
-  // should not pollute server logs as "unhandled errors".
-  if (env.NODE_ENV === 'development' && (!err.statusCode || err.statusCode >= 500)) {
+  // Only log genuine unexpected server errors (5xx).
+  // Intentional 4xx paths (bad credentials, CastError, ValidationError) are
+  // normal client errors — logging them as "server errors" pollutes dev output.
+  const isCastOrValidation = err.name === 'CastError' || err.name === 'ValidationError';
+  const is4xx = err.statusCode && err.statusCode < 500;
+  if (env.NODE_ENV === 'development' && !is4xx && !isCastOrValidation) {
     console.error('💥 Server error:', err);
   }
 

@@ -31,6 +31,27 @@ export const success = (res, message, data = {}, status = 200) => {
  * @param {number}   [status=500]    - HTTP status code
  * @param {Array}    [errors=[]]     - Optional validation errors array
  */
+/**
+ * Send a paginated list response.
+ * Doc reference: Document 5 — API Design §5 (Pagination Convention)
+ *
+ * Shape: { success: true, message, data: [], pagination: { total, page, limit, totalPages, hasNextPage, hasPrevPage } }
+ *
+ * @param {import('express').Response} res
+ * @param {string}  message      - Human-readable message
+ * @param {Array}   data         - Array of result documents
+ * @param {object}  pagination   - Built by buildPagination() from utils/paginate.js
+ * @param {number}  [status=200] - HTTP status code
+ */
+export const paginatedSuccess = (res, message, data, pagination, status = 200) => {
+  return res.status(status).json({
+    success: true,
+    message,
+    data,
+    pagination,
+  });
+};
+
 export const error = (res, message, errorCode = 'INTERNAL_ERROR', status = 500, errors = []) => {
   const body = {
     success: false,
