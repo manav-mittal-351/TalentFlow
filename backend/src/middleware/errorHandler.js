@@ -23,9 +23,11 @@ import { env } from '../config/env.js';
  */
 // eslint-disable-next-line no-unused-vars
 export const errorHandler = (err, req, res, next) => {
-  // Log full error in development; avoid leaking internals in production
-  if (env.NODE_ENV === 'development') {
-    console.error('💥 Unhandled error:', err);
+  // Only log genuine server errors (5xx) as unexpected — 4xx errors are
+  // intentional business logic (wrong password, duplicate email, etc.) and
+  // should not pollute server logs as "unhandled errors".
+  if (env.NODE_ENV === 'development' && (!err.statusCode || err.statusCode >= 500)) {
+    console.error('💥 Server error:', err);
   }
 
   // Mongoose duplicate key error (e.g. duplicate email)
