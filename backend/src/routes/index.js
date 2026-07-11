@@ -5,24 +5,26 @@
 //                Document 6 — Folder Structure (routes/index.js)
 //
 // Total documented endpoints: 44
-// Module 1 active: auth (3 endpoints)
-// All other route groups will be uncommented as modules are implemented.
+// Active: Module 1 — auth (3 endpoints)
+//         Module 2 — company (3 endpoints)
+// Remaining modules will be uncommented as built.
 
 import { Router } from 'express';
-import authRoutes from './auth.routes.js';
+import authRoutes    from './auth.routes.js';
+import companyRoutes from './company.routes.js';
 
 const router = Router();
 
 // ── Module 1: Authentication (3 endpoints) ────────────────────────────────────
 router.use('/auth', authRoutes);
 
-// ── Module 2: User / Profile (5 endpoints) ────────────────────────────────────
+// ── Module 2: Company Profile (3 endpoints) ───────────────────────────────────
+router.use('/company', companyRoutes);
+
+// ── Module 3: User / Profile (5 endpoints) ───────────────────────────────────
 // router.use('/users', userRoutes);
 
-// ── Module 3: Company (3 endpoints) ──────────────────────────────────────────
-// router.use('/company', companyRoutes);
-
-// ── Module 4: Jobs (8 endpoints) ─────────────────────────────────────────────
+// ── Module 4: Jobs (8 endpoints) ────────────────────────────────────────────────
 // router.use('/jobs', jobRoutes);
 
 // ── Module 5: Applications (10 endpoints) ────────────────────────────────────
