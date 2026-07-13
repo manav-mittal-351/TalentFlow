@@ -12,6 +12,7 @@ import UnauthorizedPage from './pages/shared/UnauthorizedPage.jsx';
 import LoginPage from './pages/public/LoginPage.jsx';
 import RegisterPage from './pages/public/RegisterPage.jsx';
 import HomePage from './pages/public/HomePage.jsx';
+import RecruiterDashboard from './pages/recruiter/RecruiterDashboard.jsx';
 
 // Simple placeholder page component builder to avoid empty render exceptions.
 function ViewPlaceholder({ title }) {
@@ -90,7 +91,7 @@ export default function App() {
           {/* Recruiter protected routes */}
           <Route
             path={ROUTES.RECRUITER.DASHBOARD}
-            element={<ViewPlaceholder title="Recruiter Workspace Dashboard" />}
+            element={<RecruiterDashboard />}
           />
           <Route
             path={ROUTES.RECRUITER.JOBS}
