@@ -1,10 +1,26 @@
 // ─── App.jsx ─────────────────────────────────────────────────────────────────
-// App entry shell mapping browser paths to modular UI page routes.
+// Main application shell wiring layout templates, route parameters, and auth guards.
 // Document reference: Document 10 — Route Structure
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ROUTES } from './constants/routes.js';
+import { PublicLayout } from './components/layout/PublicLayout.jsx';
+import { DashboardLayout } from './components/layout/DashboardLayout.jsx';
+import NotFoundPage from './pages/shared/NotFoundPage.jsx';
+import UnauthorizedPage from './pages/shared/UnauthorizedPage.jsx';
+
+// Simple placeholder page component builder to avoid empty render exceptions.
+function ViewPlaceholder({ title }) {
+  return (
+    <div className="p-6">
+      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">{title} Placeholder</h2>
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        Workspace pages are coming soon. Layout foundations are fully active and verified.
+      </p>
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -26,52 +42,108 @@ export default function App() {
       />
 
       <Routes>
-        {/* Public Routes */}
-        <Route path={ROUTES.HOME} element={<div>Public Home</div>} />
-        <Route path={ROUTES.JOBS} element={<div>Public Job Board</div>} />
-        <Route path={ROUTES.JOB_DETAIL} element={<div>Job Details</div>} />
-        <Route path={ROUTES.LOGIN} element={<div>Login Screen</div>} />
-        <Route path={ROUTES.REGISTER} element={<div>Registration Screen</div>} />
-        <Route path={ROUTES.SEARCH} element={<div>Global Search Results</div>} />
+        {/* 1. Public Route Group */}
+        <Route element={<PublicLayout />}>
+          <Route path={ROUTES.HOME} element={<ViewPlaceholder title="Careers Landing Page" />} />
+          <Route path={ROUTES.JOBS} element={<ViewPlaceholder title="Public Careers Board" />} />
+          <Route path={ROUTES.JOB_DETAIL} element={<ViewPlaceholder title="Job Specifications" />} />
+          <Route path={ROUTES.LOGIN} element={<ViewPlaceholder title="Account Sign In" />} />
+          <Route path={ROUTES.REGISTER} element={<ViewPlaceholder title="Profile Registration" />} />
+          <Route path={ROUTES.SEARCH} element={<ViewPlaceholder title="Global Job Search" />} />
+          
+          {/* Public utility pages */}
+          <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
+          <Route path={ROUTES.NOT_FOUND} element={<NotFoundPage />} />
+        </Route>
 
-        {/* Candidate Protected Routes */}
-        <Route path={ROUTES.CANDIDATE.DASHBOARD} element={<div>Candidate Dashboard</div>} />
-        <Route path={ROUTES.CANDIDATE.APPLICATIONS} element={<div>My Applications</div>} />
-        <Route
-          path={ROUTES.CANDIDATE.APPLICATION_DETAIL}
-          element={<div>Application Timeline</div>}
-        />
-        <Route path={ROUTES.CANDIDATE.SAVED_JOBS} element={<div>Saved Jobs List</div>} />
-        <Route path={ROUTES.CANDIDATE.PROFILE} element={<div>Candidate Profile</div>} />
-        <Route path={ROUTES.CANDIDATE.NOTIFICATIONS} element={<div>Candidate Notifications</div>} />
+        {/* 2. Authenticated Dashboard Route Group (handled by DashboardLayout + ProtectedRoute) */}
+        <Route element={<DashboardLayout />}>
+          {/* Candidate protected routes */}
+          <Route
+            path={ROUTES.CANDIDATE.DASHBOARD}
+            element={<ViewPlaceholder title="Candidate Workspace Dashboard" />}
+          />
+          <Route
+            path={ROUTES.CANDIDATE.APPLICATIONS}
+            element={<ViewPlaceholder title="Candidate Applications Pipeline" />}
+          />
+          <Route
+            path={ROUTES.CANDIDATE.APPLICATION_DETAIL}
+            element={<ViewPlaceholder title="Candidate Application Progress Timeline" />}
+          />
+          <Route
+            path={ROUTES.CANDIDATE.SAVED_JOBS}
+            element={<ViewPlaceholder title="Candidate Saved Job Openings" />}
+          />
+          <Route
+            path={ROUTES.CANDIDATE.PROFILE}
+            element={<ViewPlaceholder title="Candidate Profile Manager" />}
+          />
+          <Route
+            path={ROUTES.CANDIDATE.NOTIFICATIONS}
+            element={<ViewPlaceholder title="Candidate Notification Alert Panel" />}
+          />
 
-        {/* Recruiter Protected Routes */}
-        <Route path={ROUTES.RECRUITER.DASHBOARD} element={<div>Recruiter Dashboard</div>} />
-        <Route path={ROUTES.RECRUITER.JOBS} element={<div>Recruiter Jobs List</div>} />
-        <Route path={ROUTES.RECRUITER.JOB_NEW} element={<div>Post New Job</div>} />
-        <Route path={ROUTES.RECRUITER.JOB_EDIT} element={<div>Edit Job Post</div>} />
-        <Route path={ROUTES.RECRUITER.JOB_PIPELINE} element={<div>Job Hiring Pipeline</div>} />
-        <Route
-          path={ROUTES.RECRUITER.CANDIDATE_DETAIL}
-          element={<div>Candidate Evaluation Profile</div>}
-        />
-        <Route path={ROUTES.RECRUITER.INTERVIEWS} element={<div>Recruiter Interviews list</div>} />
-        <Route path={ROUTES.RECRUITER.COMPANY} element={<div>Manage Company profile</div>} />
-        <Route path={ROUTES.RECRUITER.NOTIFICATIONS} element={<div>Recruiter Notifications</div>} />
+          {/* Recruiter protected routes */}
+          <Route
+            path={ROUTES.RECRUITER.DASHBOARD}
+            element={<ViewPlaceholder title="Recruiter Workspace Dashboard" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.JOBS}
+            element={<ViewPlaceholder title="Recruiter Jobs Registry" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.JOB_NEW}
+            element={<ViewPlaceholder title="Post New Job Opening" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.JOB_EDIT}
+            element={<ViewPlaceholder title="Edit Job Opening Posting" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.JOB_PIPELINE}
+            element={<ViewPlaceholder title="Job Applicants Hiring Pipeline" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.CANDIDATE_DETAIL}
+            element={<ViewPlaceholder title="Recruiter Candidate Profile Review" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.INTERVIEWS}
+            element={<ViewPlaceholder title="Recruiter Interviews Calendar" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.COMPANY}
+            element={<ViewPlaceholder title="Manage Company Registry Profile" />}
+          />
+          <Route
+            path={ROUTES.RECRUITER.NOTIFICATIONS}
+            element={<ViewPlaceholder title="Recruiter Notification Alert Panel" />}
+          />
 
-        {/* Hiring Manager Protected Routes */}
-        <Route path={ROUTES.HM.DASHBOARD} element={<div>Hiring Manager Dashboard</div>} />
-        <Route path={ROUTES.HM.JOBS} element={<div>HM Jobs list</div>} />
-        <Route path={ROUTES.HM.JOB_PIPELINE} element={<div>HM Job applications list</div>} />
-        <Route
-          path={ROUTES.HM.CANDIDATE_DETAIL}
-          element={<div>Candidate scorecard evaluations</div>}
-        />
-        <Route path={ROUTES.HM.NOTIFICATIONS} element={<div>HM Notifications</div>} />
-
-        {/* Utility / Error Routes */}
-        <Route path={ROUTES.UNAUTHORIZED} element={<div>Access Unauthorized</div>} />
-        <Route path={ROUTES.NOT_FOUND} element={<div>Page Not Found</div>} />
+          {/* Hiring Manager protected routes */}
+          <Route
+            path={ROUTES.HM.DASHBOARD}
+            element={<ViewPlaceholder title="Hiring Manager Workspace Dashboard" />}
+          />
+          <Route
+            path={ROUTES.HM.JOBS}
+            element={<ViewPlaceholder title="Hiring Manager Jobs Registry" />}
+          />
+          <Route
+            path={ROUTES.HM.JOB_PIPELINE}
+            element={<ViewPlaceholder title="Hiring Manager Applicants Hiring Pipeline" />}
+          />
+          <Route
+            path={ROUTES.HM.CANDIDATE_DETAIL}
+            element={<ViewPlaceholder title="Hiring Manager Candidate Scorecard Evaluation" />}
+          />
+          <Route
+            path={ROUTES.HM.NOTIFICATIONS}
+            element={<ViewPlaceholder title="Hiring Manager Notification Alert Panel" />}
+          />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
