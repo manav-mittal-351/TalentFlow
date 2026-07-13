@@ -2,6 +2,7 @@
 // Main application shell wiring layout templates, route parameters, and auth guards.
 // Document reference: Document 10 — Route Structure
 
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { ROUTES } from './constants/routes.js';
@@ -12,7 +13,11 @@ import UnauthorizedPage from './pages/shared/UnauthorizedPage.jsx';
 import LoginPage from './pages/public/LoginPage.jsx';
 import RegisterPage from './pages/public/RegisterPage.jsx';
 import HomePage from './pages/public/HomePage.jsx';
-import RecruiterDashboard from './pages/recruiter/RecruiterDashboard.jsx';
+import { PageSkeleton } from './components/common/PageSkeleton.jsx';
+
+// Lazy loaded feature-heavy authenticated pages
+const RecruiterDashboard = lazy(() => import('./pages/recruiter/RecruiterDashboard.jsx'));
+const RecruiterJobsPage = lazy(() => import('./pages/recruiter/RecruiterJobsPage.jsx'));
 
 // Simple placeholder page component builder to avoid empty render exceptions.
 function ViewPlaceholder({ title }) {
@@ -45,7 +50,8 @@ export default function App() {
         }}
       />
 
-      <Routes>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
         {/* 1. Public Route Group */}
         <Route element={<PublicLayout />}>
           <Route path={ROUTES.HOME} element={<HomePage />} />
@@ -95,7 +101,7 @@ export default function App() {
           />
           <Route
             path={ROUTES.RECRUITER.JOBS}
-            element={<ViewPlaceholder title="Recruiter Jobs Registry" />}
+            element={<RecruiterJobsPage />}
           />
           <Route
             path={ROUTES.RECRUITER.JOB_NEW}
@@ -148,7 +154,8 @@ export default function App() {
             element={<ViewPlaceholder title="Hiring Manager Notification Alert Panel" />}
           />
         </Route>
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
