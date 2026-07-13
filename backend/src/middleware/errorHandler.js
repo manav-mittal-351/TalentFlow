@@ -47,6 +47,15 @@ export const errorHandler = (err, req, res, next) => {
       });
     }
 
+    // interview + submittedBy compound index → HM already submitted feedback
+    if (keys.includes('interview') && keys.includes('submittedBy')) {
+      return res.status(409).json({
+        success:   false,
+        message:   'You have already submitted feedback for this interview',
+        errorCode: 'FEEDBACK_ALREADY_SUBMITTED',
+      });
+    }
+
     // email unique index → duplicate user registration
     const field = keys[0] || 'field';
     return res.status(409).json({
@@ -55,6 +64,7 @@ export const errorHandler = (err, req, res, next) => {
       errorCode: 'EMAIL_ALREADY_EXISTS',
     });
   }
+
 
 
   // Mongoose validation error (schema-level)
