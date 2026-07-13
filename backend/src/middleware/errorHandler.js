@@ -32,15 +32,30 @@ export const errorHandler = (err, req, res, next) => {
     console.error('💥 Server error:', err);
   }
 
-  // Mongoose duplicate key error (e.g. duplicate email)
+  // Mongoose duplicate key error (code 11000)
+  // Different unique constraints map to different documented error codes.
   if (err.code === 11000) {
-    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    const keyValue = err.keyValue || {};
+    const keys     = Object.keys(keyValue);
+
+    // job + candidate compound index → candidate already applied
+    if (keys.includes('job') && keys.includes('candidate')) {
+      return res.status(409).json({
+        success:   false,
+        message:   'You have already applied to this job',
+        errorCode: 'ALREADY_APPLIED',
+      });
+    }
+
+    // email unique index → duplicate user registration
+    const field = keys[0] || 'field';
     return res.status(409).json({
       success:   false,
       message:   `An account with this ${field} already exists`,
       errorCode: 'EMAIL_ALREADY_EXISTS',
     });
   }
+
 
   // Mongoose validation error (schema-level)
   if (err.name === 'ValidationError') {
