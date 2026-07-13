@@ -13,6 +13,7 @@
 //         Module 6 — feedback     (3 endpoints)
 //         Module 7 — notifications(4 endpoints)
 //         Module 8 — dashboard    (3 endpoints)
+//         Module 9 — user         (5 endpoints)
 // Remaining modules will be uncommented as built.
 
 import { Router } from 'express';
@@ -24,6 +25,7 @@ import interviewRoutes   from './interview.routes.js';
 import feedbackRoutes    from './feedback.routes.js';
 import notificationRoutes from './notification.routes.js';
 import dashboardRoutes    from './dashboard.routes.js';
+import userRoutes        from './user.routes.js';
 
 const router = Router();
 
@@ -33,8 +35,8 @@ router.use('/auth', authRoutes);
 // ── Module 2: Company Profile (3 endpoints) ───────────────────────────────────
 router.use('/company', companyRoutes);
 
-// ── Module 3: User / Profile (5 endpoints) ───────────────────────────────────
-// router.use('/users', userRoutes);
+// ── Module 9: User / Profile (5 endpoints) ───────────────────────────────────
+router.use('/users', userRoutes);
 
 // ── Module 4: Jobs (8 endpoints) ────────────────────────────────────────────────
 router.use('/jobs', jobRoutes);
