@@ -23,6 +23,8 @@ const EditJobPage = lazy(() => import('./pages/recruiter/EditJobPage.jsx'));
 const JobPipelinePage = lazy(() => import('./pages/recruiter/JobPipelinePage.jsx'));
 const CandidateDetailPage = lazy(() => import('./pages/recruiter/CandidateDetailPage.jsx'));
 const CandidateDashboard = lazy(() => import('./pages/candidate/CandidateDashboard.jsx'));
+const JobBoardPage = lazy(() => import('./pages/public/JobBoardPage.jsx'));
+const JobDetailPage = lazy(() => import('./pages/public/JobDetailPage.jsx'));
 
 // Simple placeholder page component builder to avoid empty render exceptions.
 function ViewPlaceholder({ title }) {
@@ -60,8 +62,8 @@ export default function App() {
         {/* 1. Public Route Group */}
         <Route element={<PublicLayout />}>
           <Route path={ROUTES.HOME} element={<HomePage />} />
-          <Route path={ROUTES.JOBS} element={<ViewPlaceholder title="Public Careers Board" />} />
-          <Route path={ROUTES.JOB_DETAIL} element={<ViewPlaceholder title="Job Specifications" />} />
+          <Route path={ROUTES.JOBS} element={<JobBoardPage />} />
+          <Route path={ROUTES.JOB_DETAIL} element={<JobDetailPage />} />
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
           <Route path={ROUTES.SEARCH} element={<ViewPlaceholder title="Global Job Search" />} />
