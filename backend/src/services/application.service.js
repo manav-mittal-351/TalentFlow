@@ -11,6 +11,7 @@ import Application from '../models/Application.model.js';
 import Job         from '../models/Job.model.js';
 import User        from '../models/User.model.js';
 import { paginate, buildPagination } from '../utils/paginate.js';
+import { createNotification }        from './notification.service.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,18 @@ export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedRes
     // Increment job application count (denormalized stat)
     await Job.findByIdAndUpdate(jobId, { $inc: { applicationCount: 1 } });
 
+    // Send notification to recruiter (job.createdBy)
+    const applicant = await User.findById(candidateId).select('name');
+    await createNotification({
+      recipient:  job.createdBy,
+      type:       'application_received',
+      message:    `${applicant?.name || 'A candidate'} applied for "${job.title}"`,
+      link:       `/applications/job/${job._id}`,
+      icon:       'info',
+      relatedJob: job._id,
+      relatedApp: application._id,
+    });
+
     // Strip recruiterNotes from create() result.
     // select:false blocks it in find() queries but create() returns the full doc.
     // The candidate should never see recruiterNotes in any response.
@@ -187,7 +200,7 @@ export const withdrawApplication = async (applicationId, candidateId) => {
     _id:       applicationId,
     candidate: candidateId,
     isDeleted: false,
-  });
+  }).populate('job', 'title createdBy');
 
   if (!application) throwNotFound();
 
@@ -211,6 +224,19 @@ export const withdrawApplication = async (applicationId, candidateId) => {
   });
 
   await application.save();
+
+  // Send notification to recruiter
+  const candidateUser = await User.findById(candidateId).select('name');
+  await createNotification({
+    recipient:  application.job.createdBy,
+    type:       'application_withdrawn',
+    message:    `${candidateUser?.name || 'A candidate'} withdrew their application for "${application.job.title}"`,
+    link:       `/applications/job/${application.job._id}`,
+    icon:       'warning',
+    relatedJob: application.job._id,
+    relatedApp: application._id,
+  });
+
   return application;
 };
 
@@ -373,7 +399,7 @@ export const getApplicationById = async (applicationId, user) => {
  */
 export const updateApplicationStatus = async (applicationId, status, recruiterId) => {
   const application = await Application.findOne({ _id: applicationId, isDeleted: false })
-    .populate('job', 'createdBy');
+    .populate('job', 'createdBy title');
 
   if (!application) throwNotFound();
 
@@ -391,6 +417,34 @@ export const updateApplicationStatus = async (applicationId, status, recruiterId
 
   application.status = status;
   await application.save();
+
+  // Send notification to candidate
+  let notificationType = 'status_updated';
+  let notificationIcon = 'info';
+  let notificationMessage = `Your application status for "${application.job.title}" has been updated to ${status}`;
+
+  if (status === 'hired') {
+    notificationType = 'hired';
+    notificationIcon = 'success';
+    notificationMessage = `Congratulations! You have been hired for "${application.job.title}"`;
+  } else if (status === 'rejected') {
+    notificationType = 'rejected';
+    notificationIcon = 'error';
+    notificationMessage = `We regret to inform you that your application for "${application.job.title}" has been rejected`;
+  } else if (status === 'shortlisted') {
+    notificationIcon = 'success';
+  }
+
+  await createNotification({
+    recipient:  application.candidate,
+    type:       notificationType,
+    message:    notificationMessage,
+    link:       `/applications/my/${application._id}`,
+    icon:       notificationIcon,
+    relatedJob: application.job._id,
+    relatedApp: application._id,
+  });
+
   return application;
 };
 

@@ -9,6 +9,8 @@ import Feedback    from '../models/Feedback.model.js';
 import Interview   from '../models/Interview.model.js';
 import Application from '../models/Application.model.js';
 import { paginate, buildPagination } from '../utils/paginate.js';
+import User        from '../models/User.model.js';
+import { createNotification }        from './notification.service.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,7 +61,8 @@ export const submitFeedback = async (payload, hmId) => {
   } = payload;
 
   // 1. Validate interview exists and HM has access
-  const interview = await Interview.findById(interviewId);
+  const interview = await Interview.findById(interviewId)
+    .populate('job', 'title');
   if (!interview) {
     const err = new Error('Interview not found');
     err.statusCode = 404; err.errorCode = 'INTERVIEW_NOT_FOUND'; throw err;
@@ -106,6 +109,18 @@ export const submitFeedback = async (payload, hmId) => {
     recommendation,
     comments,
     decisionReason,
+  });
+
+  // Notify recruiter
+  const hmUser = await User.findById(hmId).select('name');
+  await createNotification({
+    recipient:  interview.scheduledBy,
+    type:       'feedback_submitted',
+    message:    `${hmUser?.name || 'A Hiring Manager'} submitted feedback for "${interview.job?.title || 'the job'}"`,
+    link:       `/feedback/application/${applicationId}`,
+    icon:       'success',
+    relatedJob: interview.job?._id,
+    relatedApp: applicationId,
   });
 
   return feedback.populate([

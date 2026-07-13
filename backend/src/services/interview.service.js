@@ -9,6 +9,7 @@ import Interview   from '../models/Interview.model.js';
 import Application from '../models/Application.model.js';
 import User        from '../models/User.model.js';
 import { paginate, buildPagination } from '../utils/paginate.js';
+import { createNotification }        from './notification.service.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,7 +60,7 @@ export const scheduleInterview = async (payload, recruiterId) => {
 
   // 1. Validate application exists and recruiter owns the job
   const application = await Application.findOne({ _id: applicationId, isDeleted: false })
-    .populate('job', 'createdBy department');
+    .populate('job', 'createdBy department title');
 
   if (!application) {
     const err = new Error('Application not found');
@@ -116,6 +117,29 @@ export const scheduleInterview = async (payload, recruiterId) => {
       changedBy: recruiterId,
     });
     await application.save();
+  }
+
+  // Trigger notifications
+  await createNotification({
+    recipient:  application.candidate,
+    type:       'interview_scheduled',
+    message:    `An interview has been scheduled for "${application.job?.title || 'the job'}"`,
+    link:       `/interviews/${interview._id}`,
+    icon:       'info',
+    relatedJob: application.job?._id,
+    relatedApp: application._id,
+  });
+
+  if (interviewerId) {
+    await createNotification({
+      recipient:  interviewerId,
+      type:       'interview_scheduled',
+      message:    `You have been assigned to conduct an interview for "${application.job?.title || 'the job'}"`,
+      link:       `/interviews/${interview._id}`,
+      icon:       'info',
+      relatedJob: application.job?._id,
+      relatedApp: application._id,
+    });
   }
 
   return interview.populate([
@@ -227,7 +251,8 @@ export const getInterviewById = async (interviewId, user) => {
  * @returns {object} Updated interview
  */
 export const updateInterview = async (interviewId, updates, recruiterId) => {
-  const interview = await Interview.findById(interviewId);
+  const interview = await Interview.findById(interviewId)
+    .populate('job', 'title');
   if (!interview) throwNotFound();
 
   if (interview.scheduledBy.toString() !== recruiterId) {
@@ -264,6 +289,31 @@ export const updateInterview = async (interviewId, updates, recruiterId) => {
 
   await interview.save();
 
+  // Send notifications if schedule changed
+  if (updates.scheduledAt || updates.format || updates.location) {
+    await createNotification({
+      recipient:  interview.candidate,
+      type:       'interview_scheduled',
+      message:    `The details of your interview for "${interview.job?.title || 'the job'}" have been updated`,
+      link:       `/interviews/${interview._id}`,
+      icon:       'info',
+      relatedJob: interview.job?._id,
+      relatedApp: interview.application,
+    });
+
+    if (interview.interviewer) {
+      await createNotification({
+        recipient:  interview.interviewer,
+        type:       'interview_scheduled',
+        message:    `The details of the interview for "${interview.job?.title || 'the job'}" have been updated`,
+        link:       `/interviews/${interview._id}`,
+        icon:       'info',
+        relatedJob: interview.job?._id,
+        relatedApp: interview.application,
+      });
+    }
+  }
+
   return interview.populate([
     { path: 'candidate',   select: 'name email' },
     { path: 'job',         select: 'title department' },
@@ -288,7 +338,8 @@ export const updateInterview = async (interviewId, updates, recruiterId) => {
  * @returns {object} Updated interview
  */
 export const updateInterviewStatus = async (interviewId, status, cancelledReason = '', recruiterId) => {
-  const interview = await Interview.findById(interviewId);
+  const interview = await Interview.findById(interviewId)
+    .populate('job', 'title');
   if (!interview) throwNotFound();
 
   if (interview.scheduledBy.toString() !== recruiterId) {
@@ -306,6 +357,50 @@ export const updateInterviewStatus = async (interviewId, status, cancelledReason
   }
 
   await interview.save();
+
+  // Send status change notifications
+  if (status === 'completed') {
+    await createNotification({
+      recipient:  interview.scheduledBy,
+      type:       'interview_completed',
+      message:    `Interview for "${interview.job?.title || 'the job'}" has been completed`,
+      link:       `/interviews/${interview._id}`,
+      icon:       'success',
+      relatedJob: interview.job?._id,
+      relatedApp: interview.application,
+    });
+    // Send to candidate too
+    await createNotification({
+      recipient:  interview.candidate,
+      type:       'status_updated',
+      message:    `Your interview for "${interview.job?.title || 'the job'}" has been completed`,
+      link:       `/interviews/${interview._id}`,
+      icon:       'success',
+      relatedJob: interview.job?._id,
+      relatedApp: interview.application,
+    });
+  } else if (status === 'cancelled') {
+    await createNotification({
+      recipient:  interview.candidate,
+      type:       'interview_cancelled',
+      message:    `Your interview for "${interview.job?.title || 'the job'}" has been cancelled`,
+      link:       `/interviews/${interview._id}`,
+      icon:       'warning',
+      relatedJob: interview.job?._id,
+      relatedApp: interview.application,
+    });
+    if (interview.interviewer) {
+      await createNotification({
+        recipient:  interview.interviewer,
+        type:       'interview_cancelled',
+        message:    `The interview for "${interview.job?.title || 'the job'}" has been cancelled`,
+        link:       `/interviews/${interview._id}`,
+        icon:       'warning',
+        relatedJob: interview.job?._id,
+        relatedApp: interview.application,
+      });
+    }
+  }
 
   return interview.populate([
     { path: 'candidate',   select: 'name email' },
