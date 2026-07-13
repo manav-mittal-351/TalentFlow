@@ -21,6 +21,7 @@ const RecruiterJobsPage = lazy(() => import('./pages/recruiter/RecruiterJobsPage
 const CreateJobPage = lazy(() => import('./pages/recruiter/CreateJobPage.jsx'));
 const EditJobPage = lazy(() => import('./pages/recruiter/EditJobPage.jsx'));
 const JobPipelinePage = lazy(() => import('./pages/recruiter/JobPipelinePage.jsx'));
+const CandidateDetailPage = lazy(() => import('./pages/recruiter/CandidateDetailPage.jsx'));
 
 // Simple placeholder page component builder to avoid empty render exceptions.
 function ViewPlaceholder({ title }) {
@@ -120,7 +121,7 @@ export default function App() {
           />
           <Route
             path={ROUTES.RECRUITER.CANDIDATE_DETAIL}
-            element={<ViewPlaceholder title="Recruiter Candidate Profile Review" />}
+            element={<CandidateDetailPage />}
           />
           <Route
             path={ROUTES.RECRUITER.INTERVIEWS}

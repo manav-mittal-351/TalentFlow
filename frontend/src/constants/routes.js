@@ -28,7 +28,7 @@ export const ROUTES = {
     JOB_NEW:            '/recruiter/jobs/new',
     JOB_EDIT:           '/recruiter/jobs/:jobId/edit',
     JOB_PIPELINE:       '/recruiter/jobs/:jobId',
-    CANDIDATE_DETAIL:   '/recruiter/candidates/:candidateId',
+    CANDIDATE_DETAIL:   '/recruiter/candidates/:applicationId',
     INTERVIEWS:         '/recruiter/interviews',
     COMPANY:            '/recruiter/company',
     NOTIFICATIONS:      '/recruiter/notifications',

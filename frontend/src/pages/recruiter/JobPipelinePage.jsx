@@ -108,16 +108,16 @@ export default function JobPipelinePage() {
     statusMutation.mutate({ appId, nextStatus });
   }, [statusMutation]);
 
-  // Route candidate review callback
+  // Route candidate review callback — navigates using the application ID (not candidate user ID)
+  // because the backend GET /api/v1/applications/:id and route param :applicationId both
+  // reference the Application document, not the User document.
   const handleViewProfile = useCallback((appId) => {
-    const app = appsList.find((a) => a._id === appId);
-    const candidateId = app?.candidate?._id;
-    if (candidateId) {
-      navigate(`/recruiter/candidates/${candidateId}`);
+    if (appId) {
+      navigate(`/recruiter/candidates/${appId}`);
     } else {
-      toast.error('Candidate details not found');
+      toast.error('Application ID not found');
     }
-  }, [appsList, navigate]);
+  }, [navigate]);
 
   // Compute live pipeline breakdown counts from local fetched response data
   const pipelineStats = useMemo(() => {
