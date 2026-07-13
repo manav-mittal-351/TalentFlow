@@ -17,6 +17,26 @@ export function PublicLayout() {
     if (meta?.meta?.title) {
       document.title = meta.meta.title;
     }
+
+    // Set meta description
+    if (meta?.meta?.description) {
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', meta.meta.description);
+    }
+
+    // Set canonical url
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.href);
   }, [meta]);
 
   return (
