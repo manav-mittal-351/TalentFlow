@@ -3,6 +3,8 @@
 // Matches backend schemas.
 
 export const JOB_STATUSES = ['draft', 'published', 'closed', 'archived'];
+export const JOB_TYPES = ['full-time', 'part-time', 'contract', 'remote'];
+export const EXPERIENCE_LEVELS = ['entry', 'mid', 'senior', 'lead'];
 
 export const APPLICATION_STATUSES = [
   'applied',
