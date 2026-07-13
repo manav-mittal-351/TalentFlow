@@ -49,7 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 // Doc: 10 requests per 15-minute window per IP.
 const authLimiter = rateLimit({
   windowMs:       15 * 60 * 1000, // 15 minutes
-  max:            10,
+  max:            process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development' ? 1000 : 10,
   standardHeaders: true,           // RateLimit-* headers (RFC 6585)
   legacyHeaders:  false,           // suppress X-RateLimit-* headers
   message: {
