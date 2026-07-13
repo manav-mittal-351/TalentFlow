@@ -9,6 +9,8 @@ import { PublicLayout } from './components/layout/PublicLayout.jsx';
 import { DashboardLayout } from './components/layout/DashboardLayout.jsx';
 import NotFoundPage from './pages/shared/NotFoundPage.jsx';
 import UnauthorizedPage from './pages/shared/UnauthorizedPage.jsx';
+import LoginPage from './pages/public/LoginPage.jsx';
+import RegisterPage from './pages/public/RegisterPage.jsx';
 
 // Simple placeholder page component builder to avoid empty render exceptions.
 function ViewPlaceholder({ title }) {
@@ -47,8 +49,8 @@ export default function App() {
           <Route path={ROUTES.HOME} element={<ViewPlaceholder title="Careers Landing Page" />} />
           <Route path={ROUTES.JOBS} element={<ViewPlaceholder title="Public Careers Board" />} />
           <Route path={ROUTES.JOB_DETAIL} element={<ViewPlaceholder title="Job Specifications" />} />
-          <Route path={ROUTES.LOGIN} element={<ViewPlaceholder title="Account Sign In" />} />
-          <Route path={ROUTES.REGISTER} element={<ViewPlaceholder title="Profile Registration" />} />
+          <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+          <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
           <Route path={ROUTES.SEARCH} element={<ViewPlaceholder title="Global Job Search" />} />
           
           {/* Public utility pages */}
