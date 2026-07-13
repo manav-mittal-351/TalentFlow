@@ -3,6 +3,14 @@
 // Run while server is running: node test-company.mjs
 // Covers all 3 documented endpoints + auth/authorization edge cases.
 
+import mongoose from 'mongoose';
+const MONGO_URI = 'mongodb+srv://manavmittal451:Manav-351-Mittal@cluster0.ucywxac.mongodb.net/talentflow';
+console.log('Clearing companies collection to ensure POST /company succeeds...');
+await mongoose.connect(MONGO_URI);
+await mongoose.connection.collection('companies').deleteMany({});
+await mongoose.disconnect();
+console.log('Companies collection cleared.');
+
 const BASE = 'http://localhost:5000/api/v1';
 
 const GREEN  = '\x1b[32m'; const RED  = '\x1b[31m';

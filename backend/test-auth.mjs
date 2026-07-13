@@ -342,6 +342,8 @@ section('SECURITY — Helmet headers, CORS, Rate Limiting');
       name: 'Rate Test',
       email: `${uniqueBase}_${i}@example.com`,
       password: 'securePass123',
+    }, {
+      'x-test-rate-limit': 'true',
     });
     if (status === 429 && data.errorCode === 'RATE_LIMIT_EXCEEDED') {
       hit429 = true;
