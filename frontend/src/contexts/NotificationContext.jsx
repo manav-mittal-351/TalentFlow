@@ -13,6 +13,7 @@ export function NotificationProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const pollIntervalRef = useRef(null);
 
   const fetchUnreadCount = useCallback(async () => {
@@ -27,11 +28,14 @@ export function NotificationProvider({ children }) {
 
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
+    setIsLoading(true);
     try {
       const response = await api.get('/notifications');
       setNotifications(response.data.data?.notifications ?? []);
     } catch (err) {
       console.error('Failed to fetch notifications list:', err);
+    } finally {
+      setIsLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -93,6 +97,7 @@ export function NotificationProvider({ children }) {
       value={{
         notifications,
         unreadCount,
+        isLoading,
         markAsRead,
         markAllAsRead,
         refetchNotifications: () => {

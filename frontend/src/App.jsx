@@ -2,9 +2,10 @@
 // Main application shell wiring layout templates, route parameters, and auth guards.
 // Document reference: Document 10 — Route Structure
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 import { ROUTES } from './constants/routes.js';
 import { PublicLayout } from './components/layout/PublicLayout.jsx';
 import { DashboardLayout } from './components/layout/DashboardLayout.jsx';
@@ -25,6 +26,19 @@ const CandidateDetailPage = lazy(() => import('./pages/recruiter/CandidateDetail
 const CandidateDashboard = lazy(() => import('./pages/candidate/CandidateDashboard.jsx'));
 const JobBoardPage = lazy(() => import('./pages/public/JobBoardPage.jsx'));
 const JobDetailPage = lazy(() => import('./pages/public/JobDetailPage.jsx'));
+const CandidateApplicationsPage = lazy(() => import('./pages/candidate/CandidateApplicationsPage.jsx'));
+const ApplicationDetailPage = lazy(() => import('./pages/candidate/ApplicationDetailPage.jsx'));
+const CandidateProfilePage = lazy(() => import('./pages/candidate/CandidateProfilePage.jsx'));
+
+// Hiring Manager lazy pages
+const HMDashboard = lazy(() => import('./pages/hiring-manager/HMDashboard.jsx'));
+const HMJobsPage = lazy(() => import('./pages/hiring-manager/HMJobsPage.jsx'));
+const HMJobPipelinePage = lazy(() => import('./pages/hiring-manager/HMJobPipelinePage.jsx'));
+const HMCandidateDetailPage = lazy(() => import('./pages/hiring-manager/HMCandidateDetailPage.jsx'));
+
+// Shared & Saved Jobs lazy pages
+const SavedJobsPage = lazy(() => import('./pages/candidate/SavedJobsPage.jsx'));
+const NotificationsPage = lazy(() => import('./pages/shared/NotificationsPage.jsx'));
 
 // Simple placeholder page component builder to avoid empty render exceptions.
 function ViewPlaceholder({ title }) {
@@ -39,6 +53,25 @@ function ViewPlaceholder({ title }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    const handleOnline = () => {
+      toast.dismiss('offline-alert');
+      toast.success('You are back online!');
+    };
+    const handleOffline = () => {
+      toast.error('You are offline. Verify your network connection.', {
+        id: 'offline-alert',
+        duration: Infinity,
+      });
+    };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       {/* Toast notifications rendering container */}
@@ -57,8 +90,9 @@ export default function App() {
         }}
       />
 
-      <Suspense fallback={<PageSkeleton />}>
-        <Routes>
+      <ErrorBoundary>
+        <Suspense fallback={<PageSkeleton />}>
+          <Routes>
         {/* 1. Public Route Group */}
         <Route element={<PublicLayout />}>
           <Route path={ROUTES.HOME} element={<HomePage />} />
@@ -82,23 +116,23 @@ export default function App() {
           />
           <Route
             path={ROUTES.CANDIDATE.APPLICATIONS}
-            element={<ViewPlaceholder title="Candidate Applications Pipeline" />}
+            element={<CandidateApplicationsPage />}
           />
           <Route
             path={ROUTES.CANDIDATE.APPLICATION_DETAIL}
-            element={<ViewPlaceholder title="Candidate Application Progress Timeline" />}
+            element={<ApplicationDetailPage />}
           />
           <Route
             path={ROUTES.CANDIDATE.SAVED_JOBS}
-            element={<ViewPlaceholder title="Candidate Saved Job Openings" />}
+            element={<SavedJobsPage />}
           />
           <Route
             path={ROUTES.CANDIDATE.PROFILE}
-            element={<ViewPlaceholder title="Candidate Profile Manager" />}
+            element={<CandidateProfilePage />}
           />
           <Route
             path={ROUTES.CANDIDATE.NOTIFICATIONS}
-            element={<ViewPlaceholder title="Candidate Notification Alert Panel" />}
+            element={<NotificationsPage />}
           />
 
           {/* Recruiter protected routes */}
@@ -136,33 +170,34 @@ export default function App() {
           />
           <Route
             path={ROUTES.RECRUITER.NOTIFICATIONS}
-            element={<ViewPlaceholder title="Recruiter Notification Alert Panel" />}
+            element={<NotificationsPage />}
           />
 
           {/* Hiring Manager protected routes */}
           <Route
             path={ROUTES.HM.DASHBOARD}
-            element={<ViewPlaceholder title="Hiring Manager Workspace Dashboard" />}
+            element={<HMDashboard />}
           />
           <Route
             path={ROUTES.HM.JOBS}
-            element={<ViewPlaceholder title="Hiring Manager Jobs Registry" />}
+            element={<HMJobsPage />}
           />
           <Route
             path={ROUTES.HM.JOB_PIPELINE}
-            element={<ViewPlaceholder title="Hiring Manager Applicants Hiring Pipeline" />}
+            element={<HMJobPipelinePage />}
           />
           <Route
             path={ROUTES.HM.CANDIDATE_DETAIL}
-            element={<ViewPlaceholder title="Hiring Manager Candidate Scorecard Evaluation" />}
+            element={<HMCandidateDetailPage />}
           />
           <Route
             path={ROUTES.HM.NOTIFICATIONS}
-            element={<ViewPlaceholder title="Hiring Manager Notification Alert Panel" />}
+            element={<NotificationsPage />}
           />
         </Route>
         </Routes>
       </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

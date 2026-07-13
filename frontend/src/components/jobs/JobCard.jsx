@@ -24,7 +24,12 @@ export function JobCard({ job, isBookmarked = false, onBookmarkToggle, className
 
   // Format salary output: e.g. "$80,000 – $120,000"
   const formatSalary = () => {
-    if (salaryMin !== undefined && salaryMax !== undefined) {
+    if (
+      salaryMin !== undefined &&
+      salaryMin !== null &&
+      salaryMax !== undefined &&
+      salaryMax !== null
+    ) {
       return `$${salaryMin.toLocaleString()} – $${salaryMax.toLocaleString()}`;
     }
     return 'Salary not disclosed';

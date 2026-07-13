@@ -16,11 +16,11 @@ export const scheduleInterview = async (req, res, next) => {
   }
 };
 
-// ─── GET /api/v1/interviews — Recruiter (paginated) ───────────────────────────
+// ─── GET /api/v1/interviews — Recruiter/HM (paginated) ────────────────────────
 export const getInterviews = async (req, res, next) => {
   try {
     const { interviews, pagination } = await interviewService.getInterviews(
-      req.user.id,
+      req.user,
       req.query
     );
     return paginatedSuccess(res, 'Interviews fetched successfully', interviews, pagination);

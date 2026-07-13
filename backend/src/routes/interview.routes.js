@@ -48,11 +48,11 @@ router.post(
   scheduleInterview
 );
 
-// ─── GET /api/v1/interviews — Recruiter list (paginated) ─────────────────────
+// ─── GET /api/v1/interviews — Recruiter/HM list (paginated) ──────────────────
 router.get(
   '/',
   verifyToken,
-  authorizeRoles('recruiter'),
+  authorizeRoles('recruiter', 'hiring_manager'),
   getInterviewsValidator,
   validate,
   getInterviews

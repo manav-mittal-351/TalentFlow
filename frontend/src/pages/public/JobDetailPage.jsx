@@ -199,7 +199,12 @@ export default function JobDetailPage() {
   };
 
   const formatSalary = () => {
-    if (job?.salaryMin !== undefined && job?.salaryMax !== undefined) {
+    if (
+      job?.salaryMin !== undefined &&
+      job?.salaryMin !== null &&
+      job?.salaryMax !== undefined &&
+      job?.salaryMax !== null
+    ) {
       return `$${job.salaryMin.toLocaleString()} – $${job.salaryMax.toLocaleString()}`;
     }
     return 'Salary not disclosed';

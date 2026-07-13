@@ -92,7 +92,7 @@ export const InterviewCard = React.memo(function InterviewCard({
       </div>
 
       {/* Recruiter update action buttons */}
-      {status === 'scheduled' && (
+      {status === 'scheduled' && onEditClick && onStatusChange && (
         <div className="flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3 text-[11px]">
           <button
             onClick={() => onEditClick(interview)}

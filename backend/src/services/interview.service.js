@@ -160,10 +160,14 @@ export const scheduleInterview = async (payload, recruiterId) => {
  * @param {object} query - req.query
  * @returns {{ interviews: Array, pagination: object }}
  */
-export const getInterviews = async (recruiterId, query) => {
+export const getInterviews = async (user, query) => {
   const { page, limit, skip } = paginate(query);
 
-  const filter = { scheduledBy: recruiterId };
+  // Preserve existing recruiter behavior, branching query logic safely:
+  const filter = user.role === 'hiring_manager'
+    ? { interviewer: user.id }
+    : { scheduledBy: user.id };
+
   if (query.status) filter.status = query.status;
 
   // sortBy: 'upcoming' = scheduledAt ASC (next interviews first)
