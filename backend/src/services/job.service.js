@@ -92,7 +92,7 @@ export const getJobs = async (query) => {
  * @throws 404 JOB_NOT_FOUND
  */
 export const getJobById = async (jobId) => {
-  const job = await Job.findOne({ _id: jobId, status: 'published', isDeleted: false })
+  const job = await Job.findOne({ _id: jobId, isDeleted: false })
     .populate('company', 'name logoUrl website location industry')
     .populate('createdBy', 'name');
 
