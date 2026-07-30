@@ -11,6 +11,7 @@ import { PageHeader } from '../../components/layout/PageHeader.jsx';
 import { StatCard } from '../../components/common/StatCard.jsx';
 import { Skeleton } from '../../components/common/Skeleton.jsx';
 import { ROUTES } from '../../constants/routes.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import api from '../../services/api.js';
 import { format } from 'date-fns';
 import {
@@ -77,6 +78,7 @@ const getInterviewFormatIcon = (formatStr) => {
 };
 
 export default function RecruiterDashboard() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const today = useMemo(() => format(new Date(), 'eeee, MMMM d, yyyy'), []);
 
@@ -92,6 +94,7 @@ export default function RecruiterDashboard() {
       const response = await api.get('/dashboard/recruiter');
       return response.data?.data;
     },
+    enabled: user?.role === 'recruiter',
     staleTime: 1000 * 60 * 5, // 5 minutes cache lifetime
   });
 

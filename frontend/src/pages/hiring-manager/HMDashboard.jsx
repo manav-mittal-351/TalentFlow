@@ -33,6 +33,7 @@ export default function HMDashboard() {
       const response = await api.get('/dashboard/hiring-manager');
       return response.data?.data;
     },
+    enabled: user?.role === 'hiring_manager',
     staleTime: 1000 * 60 * 2, // 2 mins cache
   });
 

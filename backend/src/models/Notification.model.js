@@ -22,6 +22,19 @@ const notificationSchema = new Schema(
       required: [true, 'Recipient user reference is required'],
     },
 
+    sender: {
+      type:    Schema.Types.ObjectId,
+      ref:     'User',
+      default: null,
+    },
+
+    title: {
+      type:      String,
+      default:   '',
+      maxlength: [150, 'Notification title cannot exceed 150 characters'],
+      trim:      true,
+    },
+
     type: {
       type:     String,
       enum: {

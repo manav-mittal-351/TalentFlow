@@ -34,8 +34,10 @@ const profileSchema = new Schema(
     phone: {
       type: String,
       default: '',
+      // Allow empty string (field not provided) OR a valid phone number.
+      // Without the ^$ alternative, Mongoose would reject '' on every save.
       match: [
-        /^\+?[0-9\s\-().]{7,20}$/,
+        /^$|^\+?[0-9\s\-().]{7,20}$/,
         'Please enter a valid phone number',
       ],
     },
@@ -48,14 +50,36 @@ const profileSchema = new Schema(
     resumeUrl: {
       type: String,
       default: '',
-      // Local path in V1 — e.g. uploads/resumes/filename.pdf
-      // V2: Cloudinary URL
     },
+    skills: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    experience: [
+      {
+        title: { type: String, trim: true },
+        company: { type: String, trim: true },
+        startDate: { type: Date },
+        endDate: { type: Date },
+        current: { type: Boolean, default: false },
+        description: { type: String, trim: true },
+      },
+    ],
+    education: [
+      {
+        school: { type: String, trim: true },
+        degree: { type: String, trim: true },
+        fieldOfStudy: { type: String, trim: true },
+        gradYear: { type: Number },
+      },
+    ],
     portfolioUrl: {
       type: String,
       default: '',
       match: [
-        /^(https?:\/\/).+/,
+        /^$|^https?:\/\/.+/,
         'Portfolio URL must start with http:// or https://',
       ],
     },
@@ -63,17 +87,41 @@ const profileSchema = new Schema(
       type: String,
       default: '',
       match: [
-        /^(https?:\/\/(www\.)?github\.com\/).+/,
-        'Must be a valid GitHub URL (github.com/...)',
+        /^$|^https?:\/\/(www\.)?github\.com\/.+/,
+        'githubUrl: Must be a valid GitHub URL (github.com/...)',
       ],
     },
     linkedinUrl: {
       type: String,
       default: '',
       match: [
-        /^(https?:\/\/(www\.)?linkedin\.com\/).+/,
-        'Must be a valid LinkedIn URL (linkedin.com/...)',
+        /^$|^https?:\/\/(www\.)?linkedin\.com\/.+/,
+        'linkedinUrl: Must be a valid LinkedIn URL (linkedin.com/...)',
       ],
+    },
+    twitterUrl: {
+      type: String, default: '',
+      match: [/^$|^https?:\/\/.+/, 'Must be a valid URL starting with http:// or https://'],
+    },
+    leetcodeUrl: {
+      type: String, default: '',
+      match: [/^$|^https?:\/\/.+/, 'Must be a valid URL starting with http:// or https://'],
+    },
+    codechefUrl: {
+      type: String, default: '',
+      match: [/^$|^https?:\/\/.+/, 'Must be a valid URL starting with http:// or https://'],
+    },
+    hackerrankUrl: {
+      type: String, default: '',
+      match: [/^$|^https?:\/\/.+/, 'Must be a valid URL starting with http:// or https://'],
+    },
+    behanceUrl: {
+      type: String, default: '',
+      match: [/^$|^https?:\/\/.+/, 'Must be a valid URL starting with http:// or https://'],
+    },
+    dribbbleUrl: {
+      type: String, default: '',
+      match: [/^$|^https?:\/\/.+/, 'Must be a valid URL starting with http:// or https://'],
     },
     isProfileComplete: {
       type: Boolean,

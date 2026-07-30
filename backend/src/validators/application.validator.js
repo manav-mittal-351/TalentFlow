@@ -39,9 +39,12 @@ export const updateNotesValidator = [
 // ─── GET /applications/my — Candidate ─────────────────────────────────────────
 export const getMyApplicationsValidator = [
   query('status')
-    .optional()
-    .isIn(APPLICATION_STATUSES)
-    .withMessage(`Status must be one of: ${APPLICATION_STATUSES.join(', ')}`),
+    .optional({ checkFalsy: true })
+    .custom((val) => {
+      if (!val || val === 'all' || val === 'ALL') return true;
+      return APPLICATION_STATUSES.includes(val);
+    })
+    .withMessage(`Status must be one of: ${APPLICATION_STATUSES.join(', ')}, or 'all'`),
 
   query('sortBy')
     .optional()
@@ -60,9 +63,12 @@ export const getMyApplicationsValidator = [
 // ─── GET /applications/job/:jobId — Recruiter ─────────────────────────────────
 export const getJobApplicationsValidator = [
   query('status')
-    .optional()
-    .isIn(APPLICATION_STATUSES)
-    .withMessage(`Status must be one of: ${APPLICATION_STATUSES.join(', ')}`),
+    .optional({ checkFalsy: true })
+    .custom((val) => {
+      if (!val || val === 'all' || val === 'ALL') return true;
+      return APPLICATION_STATUSES.includes(val);
+    })
+    .withMessage(`Status must be one of: ${APPLICATION_STATUSES.join(', ')}, or 'all'`),
 
   query('sortBy')
     .optional()

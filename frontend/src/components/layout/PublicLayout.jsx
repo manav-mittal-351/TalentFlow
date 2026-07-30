@@ -8,9 +8,22 @@ import { useRouteMeta } from '../../hooks/useRouteMeta.js';
 import { ThemeToggle } from './ThemeToggle.jsx';
 import { ROUTES } from '../../constants/routes.js';
 import { ScrollRestoration } from './ScrollRestoration.jsx';
+import Logo from '../common/Logo.jsx';
+
+
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { UserMenu } from './UserMenu.jsx';
 
 export function PublicLayout() {
+  const { user } = useAuth();
   const meta = useRouteMeta();
+
+  const getDashboardPath = () => {
+    if (!user) return ROUTES.LOGIN;
+    if (user.role === 'recruiter') return ROUTES.RECRUITER.DASHBOARD;
+    if (user.role === 'hiring_manager') return ROUTES.HM.DASHBOARD;
+    return ROUTES.CANDIDATE.DASHBOARD;
+  };
 
   // Set document title and SEO descriptions dynamically for public crawlers
   useEffect(() => {
@@ -44,15 +57,10 @@ export function PublicLayout() {
       <ScrollRestoration />
 
       {/* 1. Header */}
-      <header className="w-full h-16 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-55">
+      <header className="w-full h-16 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
         <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <Link to={ROUTES.HOME} className="flex items-center gap-2 focus-ring rounded-lg">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0">
-              T
-            </div>
-            <span className="font-bold text-lg text-slate-900 dark:text-white">
-              TalentFlow
-            </span>
+          <Link to={user ? getDashboardPath() : ROUTES.HOME} className="focus-ring rounded-lg">
+            <Logo size="md" />
           </Link>
 
           <nav className="flex items-center gap-4">
@@ -63,18 +71,33 @@ export function PublicLayout() {
               Careers
             </Link>
             <ThemeToggle />
-            <Link
-              to={ROUTES.LOGIN}
-              className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 focus-ring px-2.5 py-1.5 rounded-lg"
-            >
-              Sign In
-            </Link>
-            <Link
-              to={ROUTES.REGISTER}
-              className="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-md transition-all focus-ring hover:scale-[1.02]"
-            >
-              Join Us
-            </Link>
+
+            {user ? (
+              <>
+                <Link
+                  to={getDashboardPath()}
+                  className="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-md transition-all focus-ring hover:scale-[1.02]"
+                >
+                  Dashboard
+                </Link>
+                <UserMenu />
+              </>
+            ) : (
+              <>
+                <Link
+                  to={ROUTES.LOGIN}
+                  className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 focus-ring px-2.5 py-1.5 rounded-lg"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to={ROUTES.REGISTER}
+                  className="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow-md transition-all focus-ring hover:scale-[1.02]"
+                >
+                  Join Us
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Star, Eye, ChevronDown } from 'lucide-react';
+import { Star, Eye } from 'lucide-react';
 import { cn } from '../../utils/cn.js';
 
 const STAGE_BADGES = {
@@ -25,14 +25,11 @@ export const CandidateCard = React.memo(function CandidateCard({
   application,
   onViewProfile,
   onStatusUpdateClick,
-  activeMenuId,
-  onToggleMenu,
 }) {
   const { _id, candidate, status, appliedAt, averageScore } = application;
   const name = candidate?.name || 'Unknown Candidate';
   const email = candidate?.email || '';
   const headline = candidate?.profile?.headline || 'No headline';
-  const isMenuOpen = activeMenuId === _id;
 
   const getInitials = () => {
     return name
@@ -91,46 +88,32 @@ export const CandidateCard = React.memo(function CandidateCard({
           {formatStage(status)}
         </span>
 
-        <div className="flex items-center gap-1.5 relative">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => onViewProfile(_id)}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold"
+            className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-xs focus-ring"
             type="button"
-            aria-label="View profile"
+            aria-label="View candidate profile"
           >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-          
-          <button
-            onClick={() => onToggleMenu(_id)}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold flex items-center gap-1"
-            aria-expanded={isMenuOpen}
-            type="button"
-          >
-            <span>Status</span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <Eye className="w-3.5 h-3.5 text-slate-400" />
+            <span>View</span>
           </button>
 
-          {isMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => onToggleMenu(null)} />
-              <div className="absolute right-0 bottom-8 mt-1 w-44 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg z-50 py-1 flex flex-col text-left">
-                {Object.keys(STAGE_BADGES).map((stageKey) => (
-                  <button
-                    key={stageKey}
-                    onClick={() => onStatusUpdateClick(_id, stageKey)}
-                    className={cn(
-                      'px-3 py-1.5 text-xs text-slate-700 dark:text-slate-250 hover:bg-slate-50 dark:hover:bg-slate-800 text-left w-full',
-                      status === stageKey && 'text-indigo-650 dark:text-indigo-400 bg-indigo-50/10'
-                    )}
-                    type="button"
-                  >
-                    {formatStage(stageKey)}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+          <select
+            value={status}
+            onChange={(e) => onStatusUpdateClick(_id, e.target.value)}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-bold focus-ring cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-xs"
+            aria-label="Update candidate stage status"
+          >
+            <option value="applied">Applied</option>
+            <option value="under_review">Under Review</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="interview">Interviewing</option>
+            <option value="offer">Offered</option>
+            <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
+            <option value="withdrawn">Withdrawn</option>
+          </select>
         </div>
       </div>
     </div>

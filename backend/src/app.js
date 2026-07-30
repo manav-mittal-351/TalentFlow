@@ -11,10 +11,14 @@ import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { env } from './config/env.js';
 import router from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
@@ -72,6 +76,12 @@ app.use('/api/v1/auth/login',    authLimiter);
 
 // ─── API routes ───────────────────────────────────────────────────────────────
 app.use('/api/v1', router);
+
+// ─── Static file serving — uploaded resumes ─────────────────────────────────
+// Serves resume files uploaded via POST /api/v1/users/resume and
+// POST /api/v1/applications/:jobId. Files are stored at backend/uploads/resumes/.
+// Access via: GET http://localhost:5000/uploads/resumes/<filename>
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 // Used by Render health checks and uptime monitors.

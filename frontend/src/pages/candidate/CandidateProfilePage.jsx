@@ -19,6 +19,7 @@ import { useCallback } from 'react';
 import { PageContainer } from '../../components/layout/PageContainer.jsx';
 import { PageHeader } from '../../components/layout/PageHeader.jsx';
 import { ProfilePersonalInfo } from '../../components/profile/ProfilePersonalInfo.jsx';
+import { ProfileSkillsExperience } from '../../components/profile/ProfileSkillsExperience.jsx';
 import { ProfileLinks } from '../../components/profile/ProfileLinks.jsx';
 import { ProfileResume } from '../../components/profile/ProfileResume.jsx';
 import { ProfileCompleteness } from '../../components/profile/ProfileCompleteness.jsx';
@@ -148,6 +149,9 @@ export default function CandidateProfilePage() {
 
           {/* Personal Info — editable */}
           <ProfilePersonalInfo profile={profile} onUpdate={handleUpdate} />
+
+          {/* Skills, Experience & Education — editable */}
+          <ProfileSkillsExperience profile={profile} onUpdate={handleUpdate} />
 
           {/* Social & Portfolio Links — editable */}
           <ProfileLinks profile={profile} onUpdate={handleUpdate} />

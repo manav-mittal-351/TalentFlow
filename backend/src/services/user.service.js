@@ -46,7 +46,17 @@ export const updateProfile = async (candidateId, updates) => {
   if (!user) throwNotFound();
 
   // Allowed profile fields
-  const ALLOWED = ['headline', 'bio', 'phone', 'location', 'portfolioUrl', 'githubUrl', 'linkedinUrl'];
+  const ALLOWED = [
+    'headline', 'bio', 'phone', 'location',
+    'skills', 'experience', 'education',
+    'portfolioUrl', 'githubUrl', 'linkedinUrl',
+    'twitterUrl', 'leetcodeUrl', 'codechefUrl',
+    'hackerrankUrl', 'behanceUrl', 'dribbbleUrl',
+  ];
+
+  if (updates.department !== undefined) {
+    user.department = updates.department;
+  }
 
   for (const field of ALLOWED) {
     if (updates[field] !== undefined) {

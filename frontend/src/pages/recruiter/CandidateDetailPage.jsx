@@ -183,8 +183,11 @@ export default function CandidateDetailPage() {
   }, [statusMutation]);
 
   const handleScheduleSubmit = useCallback((data) => {
+    if (status === 'applied' || status === 'under_review') {
+      statusMutation.mutate('interview');
+    }
     scheduleMutation.mutate(data);
-  }, [scheduleMutation]);
+  }, [scheduleMutation, statusMutation, status]);
 
   const handleEditSubmit = useCallback((data) => {
     if (editingInterview?._id) {
@@ -334,15 +337,10 @@ export default function CandidateDetailPage() {
             {/* Schedule Interview Trigger */}
             <button
               onClick={() => {
-                if (!isSchedulable) {
-                  toast.error('Candidate must be shortlisted or in interviewing stage to schedule an interview');
-                  return;
-                }
                 setIsScheduleOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow transition-all focus-ring hover:scale-[1.01] disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow transition-all focus-ring hover:scale-[1.01]"
               type="button"
-              disabled={!isSchedulable}
             >
               <Calendar className="w-4 h-4" />
               <span>Schedule Interview</span>
@@ -356,7 +354,7 @@ export default function CandidateDetailPage() {
         {/* Left Columns (Col Span 2) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Card */}
-          <CandidateProfileCard candidate={candidate} />
+          <CandidateProfileCard candidate={candidate} job={job} coverNote={application?.coverNote} />
 
           {/* Timeline and History logs */}
           <StatusTimeline statusHistory={statusHistory} currentStatus={status} />

@@ -42,13 +42,13 @@
 
 /* Dark Mode Overrides */
 .dark {
-  --color-bg-base: #0f172a;         /* Slate 900 */
-  --color-bg-surface: #1e293b;      /* Slate 800 */
-  --color-text-primary: #f8fafc;    /* Slate 50 */
-  --color-text-secondary: #cbd5e1;  /* Slate 300 */
-  --color-text-muted: #64748b;      /* Slate 500 */
-  --color-border: #334155;          /* Slate 700 */
+  --color-bg-base: #0b0f19;         /* Rich dark slate background */
+  --color-bg-surface: #151d2a;      /* High contrast dark surface */
+  --color-text-primary: #ffffff;    /* Pure white primary text */
+  --color-text-secondary: #cbd5e1;  /* High contrast secondary text */
+  --color-text-muted: #94a3b8;      /* High contrast muted text */
+  --color-border: #283548;          /* Crisp dark border */
 
-  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
 }

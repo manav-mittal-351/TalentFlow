@@ -67,20 +67,20 @@ export function UserMenu() {
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 focus-ring rounded-full"
+        className="flex items-center gap-2 focus-ring rounded-full shrink-0"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User account menu"
         type="button"
       >
-        <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold text-sm flex items-center justify-center border border-indigo-200 dark:border-indigo-800 transition-transform duration-200 hover:scale-105">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold text-xs sm:text-sm flex items-center justify-center border border-indigo-200 dark:border-indigo-800 transition-transform duration-200 hover:scale-105">
           {getInitials()}
         </div>
       </button>
 
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+          className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:mt-2.5 w-auto sm:w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
           role="menu"
           aria-orientation="vertical"
         >

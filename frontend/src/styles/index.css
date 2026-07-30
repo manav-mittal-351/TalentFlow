@@ -5,10 +5,16 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-size: 16px;
+  }
+
   body {
     background-color: var(--color-bg-base);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
+    font-size: 1rem; /* 16px default body size */
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
@@ -31,6 +37,46 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-text-muted);
   }
+}
+
+/* Global Typography Boost Rules for Maximum Readability */
+@layer utilities {
+  .text-xs {
+    font-size: 0.84rem !important; /* 13.5px instead of 12px */
+    line-height: 1.25rem !important;
+  }
+
+  .text-sm {
+    font-size: 0.95rem !important; /* 15.2px instead of 14px */
+    line-height: 1.4rem !important;
+  }
+
+  .text-base {
+    font-size: 1.0625rem !important; /* 17px instead of 16px */
+    line-height: 1.6rem !important;
+  }
+
+  .text-lg {
+    font-size: 1.2rem !important; /* 19.2px instead of 18px */
+    line-height: 1.75rem !important;
+  }
+}
+
+/* Dark mode contrast enhancement rules to prevent text blending */
+.dark {
+  color-scheme: dark;
+}
+
+.dark .text-slate-400 {
+  color: #cbd5e1;
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8;
+}
+
+.dark .text-slate-600 {
+  color: #cbd5e1;
 }
 
 /* Custom Utilities or components if needed */

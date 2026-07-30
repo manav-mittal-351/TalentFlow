@@ -23,6 +23,8 @@ const CreateJobPage = lazy(() => import('./pages/recruiter/CreateJobPage.jsx'));
 const EditJobPage = lazy(() => import('./pages/recruiter/EditJobPage.jsx'));
 const JobPipelinePage = lazy(() => import('./pages/recruiter/JobPipelinePage.jsx'));
 const CandidateDetailPage = lazy(() => import('./pages/recruiter/CandidateDetailPage.jsx'));
+const InterviewsPage = lazy(() => import('./pages/recruiter/InterviewsPage.jsx'));
+const CompanyProfilePage = lazy(() => import('./pages/recruiter/CompanyProfilePage.jsx'));
 const CandidateDashboard = lazy(() => import('./pages/candidate/CandidateDashboard.jsx'));
 const JobBoardPage = lazy(() => import('./pages/public/JobBoardPage.jsx'));
 const JobDetailPage = lazy(() => import('./pages/public/JobDetailPage.jsx'));
@@ -73,7 +75,7 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       {/* Toast notifications rendering container */}
       <Toaster
         position="top-right"
@@ -162,11 +164,11 @@ export default function App() {
           />
           <Route
             path={ROUTES.RECRUITER.INTERVIEWS}
-            element={<ViewPlaceholder title="Recruiter Interviews Calendar" />}
+            element={<InterviewsPage />}
           />
           <Route
             path={ROUTES.RECRUITER.COMPANY}
-            element={<ViewPlaceholder title="Manage Company Registry Profile" />}
+            element={<CompanyProfilePage />}
           />
           <Route
             path={ROUTES.RECRUITER.NOTIFICATIONS}

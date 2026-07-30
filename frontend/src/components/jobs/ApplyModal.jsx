@@ -3,7 +3,7 @@
 // or required resume file uploads.
 
 import React, { useState } from 'react';
-import { X, Upload, FileText, AlertTriangle, Loader2 } from 'lucide-react';
+import { X, Upload, FileText, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 
 export const ApplyModal = React.memo(function ApplyModal({
   job,
@@ -13,6 +13,8 @@ export const ApplyModal = React.memo(function ApplyModal({
   isPending = false,
 }) {
   const [coverNote, setCoverNote] = useState('');
+  const existingSkills = (user?.profile?.skills || []).join(', ');
+  const [skillsInput, setSkillsInput] = useState(existingSkills);
   const [resumeMode, setResumeMode] = useState(
     user?.profile?.resumeUrl ? 'profile' : 'upload'
   );
@@ -61,6 +63,9 @@ export const ApplyModal = React.memo(function ApplyModal({
     // Prepare FormData payload for multipart upload
     const formData = new FormData();
     formData.append('coverNote', coverNote.trim());
+    if (skillsInput.trim()) {
+      formData.append('skills', skillsInput.trim());
+    }
     if (resumeMode === 'upload' && file) {
       formData.append('resume', file);
     }
@@ -198,6 +203,25 @@ export const ApplyModal = React.memo(function ApplyModal({
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Skills & Focus Areas */}
+            <div className="space-y-1.5">
+              <label htmlFor="skillsInput" className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Skills & Focus Areas (Comma-separated)</span>
+              </label>
+              <input
+                id="skillsInput"
+                type="text"
+                value={skillsInput}
+                onChange={(e) => setSkillsInput(e.target.value)}
+                placeholder="e.g. React, Node.js, JavaScript, Python, Communication..."
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus-ring leading-relaxed"
+              />
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                Skills will be displayed to recruiters on your candidate profile card.
+              </p>
             </div>
 
             {/* Cover Note */}

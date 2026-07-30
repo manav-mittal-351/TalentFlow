@@ -9,6 +9,8 @@ import { useAuth } from '../../contexts/AuthContext.jsx';
 import { ROUTE_META } from '../../constants/routeMeta.js';
 import { cn } from '../../utils/cn.js';
 import { LogOut, X } from 'lucide-react';
+import Logo from '../common/Logo.jsx';
+
 
 export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
   const { user, logout } = useAuth();
@@ -18,7 +20,7 @@ export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
   // Close mobile drawer on route changes
   useEffect(() => {
     onMobileClose();
-  }, [pathname, onMobileClose]);
+  }, [pathname]);
 
   // Close mobile drawer on Escape key press
   useEffect(() => {
@@ -30,6 +32,18 @@ export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isMobileOpen, onMobileClose]);
+
+  // Lock body scrolling when mobile drawer is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileOpen]);
 
   if (!user) return null;
 
@@ -46,16 +60,11 @@ export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
       {/* 1. Brand Logo */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-indigo-200 dark:shadow-none shrink-0">
-            T
-          </div>
-          {(!isCollapsed || isMobileOpen) && (
-            <span className="font-bold text-lg bg-gradient-to-r from-slate-900 to-indigo-700 dark:from-slate-100 dark:to-indigo-400 bg-clip-text text-transparent">
-              TalentFlow
-            </span>
-          )}
-        </div>
+        <Logo
+          size="md"
+          showText={!isCollapsed || isMobileOpen}
+          textClassName="bg-gradient-to-r from-slate-900 to-indigo-700 dark:from-slate-100 dark:to-indigo-400 bg-clip-text text-transparent"
+        />
 
         {/* Mobile close button */}
         {isMobileOpen && (
@@ -82,7 +91,7 @@ export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 focus-ring group',
                   isActive
-                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
                 )
               }
@@ -150,10 +159,10 @@ export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
             {/* Dark Backdrop Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
+              animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               onClick={onMobileClose}
-              className="fixed inset-0 bg-black z-30 lg:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 lg:hidden"
               aria-hidden="true"
             />
 
@@ -163,7 +172,7 @@ export function Sidebar({ isCollapsed, isMobileOpen, onMobileClose }) {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25 }}
-              className="fixed top-0 bottom-0 left-0 w-72 z-40 h-full shadow-2xl lg:hidden"
+              className="fixed top-0 bottom-0 left-0 w-72 max-w-[85vw] z-50 h-full shadow-2xl lg:hidden"
               role="navigation"
               aria-label="Mobile Navigation"
             >

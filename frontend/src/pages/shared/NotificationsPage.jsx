@@ -2,7 +2,7 @@
 // Global in-app notifications hub. Displays a user's notifications, unread counts,
 // tab filters, and handles mark-as-read and redirection workflows.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageContainer } from '../../components/layout/PageContainer.jsx';
 import { PageHeader } from '../../components/layout/PageHeader.jsx';
@@ -34,6 +34,8 @@ const COLOR_MAP = {
   info: 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-450 border-blue-105 dark:border-blue-900/35',
 };
 
+import { getNotificationTargetUrl } from '../../utils/notificationRoute.js';
+
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -43,45 +45,25 @@ export default function NotificationsPage() {
     isLoading,
     markAsRead,
     markAllAsRead,
+    refetchNotifications,
   } = useNotifications();
 
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'unread'
 
   const userRole = user?.role || 'candidate';
 
+  // Fetch fresh notifications when entering Notification Center
+  useEffect(() => {
+    refetchNotifications();
+  }, [refetchNotifications]);
+
   // Navigate to appropriate role-scoped detail view
   const handleNotificationClick = async (notif) => {
     if (!notif.isRead) {
       await markAsRead(notif._id);
     }
-
-    const appId = notif.relatedApp?._id || notif.relatedApp;
-    const jobId = notif.relatedJob?._id || notif.relatedJob;
-
-    // Routing mapping matrix
-    if (userRole === 'candidate') {
-      if (appId) {
-        navigate(`/candidate/applications/${appId}`);
-      } else {
-        navigate('/candidate/dashboard');
-      }
-    } else if (userRole === 'recruiter') {
-      if (appId) {
-        navigate(`/recruiter/candidates/${appId}`);
-      } else if (jobId) {
-        navigate(`/recruiter/jobs/${jobId}`);
-      } else {
-        navigate('/recruiter/dashboard');
-      }
-    } else if (userRole === 'hiring_manager') {
-      if (appId) {
-        navigate(`/hiring-manager/candidates/${appId}`);
-      } else if (jobId) {
-        navigate(`/hiring-manager/jobs/${jobId}`);
-      } else {
-        navigate('/hiring-manager/dashboard');
-      }
-    }
+    const targetUrl = getNotificationTargetUrl(notif, userRole);
+    navigate(targetUrl);
   };
 
   const filteredNotifications = notifications.filter((notif) => {
@@ -187,20 +169,32 @@ export default function NotificationsPage() {
                 >
                   <div className="flex items-start gap-3.5">
                     {/* Icon tag */}
-                    <div className={cn('p-2 border rounded-xl shrink-0 flex items-center justify-center', colorClasses)}>
+                    <div className={cn('p-2 border rounded-xl shrink-0 flex items-center justify-center mt-0.5', colorClasses)}>
                       <IconComponent className="w-4 h-4 shrink-0" />
                     </div>
                     {/* Message content */}
                     <div className="space-y-1 pr-4">
+                      {notif.title && (
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                          {notif.title}
+                        </h4>
+                      )}
                       <p className={cn(
-                        'text-slate-700 dark:text-slate-300 leading-relaxed font-semibold',
-                        !notif.isRead && 'text-slate-900 dark:text-slate-100 font-bold'
+                        'text-slate-700 dark:text-slate-300 leading-relaxed',
+                        !notif.title && 'font-semibold',
+                        !notif.isRead && !notif.title && 'text-slate-900 dark:text-slate-100 font-bold'
                       )}>
                         {notif.message}
                       </p>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {getRelativeTime(notif.createdAt)}
-                      </span>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium pt-0.5">
+                        <span>{getRelativeTime(notif.createdAt)}</span>
+                        {notif.sender?.name && (
+                          <>
+                            <span>·</span>
+                            <span>From: {notif.sender.name}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 

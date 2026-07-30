@@ -10,6 +10,7 @@ import { PageContainer } from '../../components/layout/PageContainer.jsx';
 import { PageHeader } from '../../components/layout/PageHeader.jsx';
 import { Skeleton } from '../../components/common/Skeleton.jsx';
 import { ROUTES } from '../../constants/routes.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import api from '../../services/api.js';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -64,7 +65,9 @@ const JobStatusBadge = React.memo(function JobStatusBadge({ status }) {
   }
 });
 
+
 export default function RecruiterJobsPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Filter and pagination state parameters matching backend specs
@@ -100,6 +103,7 @@ export default function RecruiterJobsPage() {
       const response = await api.get('/jobs/recruiter/all', { params });
       return response.data;
     },
+    enabled: user?.role === 'recruiter',
     staleTime: 1000 * 60 * 5, // 5 minutes cache lifetime
   });
 
@@ -494,14 +498,19 @@ export default function RecruiterJobsPage() {
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
             Failed to fetch job postings
           </h3>
-          <button
-            onClick={() => refetch()}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-xl shadow-sm focus-ring transition-transform hover:scale-[1.01]"
-            type="button"
-          >
-            <RotateCw className="w-3.5 h-3.5" />
-            <span>Retry connection</span>
-          </button>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Please verify your network connection or sign in with a valid recruiter account.
+          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-xl shadow-sm focus-ring transition-transform hover:scale-[1.01]"
+              type="button"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              <span>Retry connection</span>
+            </button>
+          </div>
         </div>
       ) : filteredJobsList.length === 0 ? (
         /* Empty results */

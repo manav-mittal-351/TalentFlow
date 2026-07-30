@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import { AlertTriangle, RotateCw, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
 function SkeletonList() {
   return (
@@ -25,7 +26,9 @@ function SkeletonList() {
   );
 }
 
+
 export default function CandidateApplicationsPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isPendingFilter, startTransition] = useTransition();
 
@@ -49,6 +52,7 @@ export default function CandidateApplicationsPage() {
       const response = await api.get('/applications/my', { params });
       return response.data;
     },
+    enabled: user?.role === 'candidate',
     staleTime: 1000 * 60 * 2, // 2 mins cache
   });
 

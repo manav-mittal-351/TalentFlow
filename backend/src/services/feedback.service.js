@@ -115,9 +115,11 @@ export const submitFeedback = async (payload, hmId) => {
   const hmUser = await User.findById(hmId).select('name');
   await createNotification({
     recipient:  interview.scheduledBy,
+    sender:     hmId,
+    title:      'Evaluation Feedback Submitted',
     type:       'feedback_submitted',
     message:    `${hmUser?.name || 'A Hiring Manager'} submitted feedback for "${interview.job?.title || 'the job'}"`,
-    link:       `/feedback/application/${applicationId}`,
+    link:       `/recruiter/candidates/${applicationId}`,
     icon:       'success',
     relatedJob: interview.job?._id,
     relatedApp: applicationId,

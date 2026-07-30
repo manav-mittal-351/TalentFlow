@@ -97,6 +97,7 @@ export default function CandidateDashboard() {
       const res = await api.get('/dashboard/candidate');
       return res.data?.data;
     },
+    enabled: user?.role === 'candidate',
     staleTime: 1000 * 60 * 3, // 3 min cache
   });
 

@@ -8,9 +8,10 @@ export const EXPERIENCE_LEVELS = ['entry', 'mid', 'senior', 'lead'];
 
 export const APPLICATION_STATUSES = [
   'applied',
+  'under_review',
   'shortlisted',
-  'interviewing',
-  'offered',
+  'interview',
+  'offer',
   'hired',
   'rejected',
   'withdrawn',

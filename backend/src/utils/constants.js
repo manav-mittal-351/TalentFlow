@@ -59,6 +59,7 @@ export const NOTIFICATION_TYPES = Object.freeze([
   'application_withdrawn',
   'hired',
   'rejected',
+  'evaluation_requested',
 ]);
 
 export const NOTIFICATION_ICONS = Object.freeze(['success', 'info', 'warning', 'error']);

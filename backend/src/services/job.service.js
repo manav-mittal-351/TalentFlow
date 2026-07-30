@@ -109,13 +109,16 @@ export const getJobById = async (jobId) => {
  * @throws 400 DEADLINE_IN_PAST
  */
 export const createJob = async (payload, userId) => {
-  // V1 design: jobs are always linked to the single platform company
-  const company = await Company.findOne({ isDeleted: false });
+  // V1 design: jobs are always linked to the platform company
+  let company = await Company.findOne({ isDeleted: false });
   if (!company) {
-    const err = new Error('No company profile exists. Create a company before posting jobs.');
-    err.statusCode = 400;
-    err.errorCode  = 'COMPANY_NOT_FOUND';
-    throw err;
+    company = await Company.create({
+      name: 'TalentFlow Inc.',
+      industry: 'Technology',
+      location: 'Global',
+      description: 'Platform Company',
+      createdBy: userId,
+    });
   }
 
   // Validate applicationDeadline is a future date (Doc 04 §8)

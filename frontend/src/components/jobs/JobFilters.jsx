@@ -22,7 +22,7 @@ export const JobFilters = React.memo(function JobFilters({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-5 shadow-sm sticky top-24">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-5 shadow-sm lg:sticky lg:top-20 z-10">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">

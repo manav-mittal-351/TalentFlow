@@ -24,7 +24,6 @@ import {
   Building,
   GraduationCap,
   Clock,
-  ExternalLink,
 } from 'lucide-react';
 import { cn } from '../../utils/cn.js';
 
@@ -68,16 +67,9 @@ export default function JobDetailPage() {
     staleTime: 1000 * 60 * 5, // 5 min cache
   });
 
-  // 2. Fetch User Profile Details to obtain the permanent resumeUrl
-  const { data: userProfile } = useQuery({
-    queryKey: ['myProfileDetails'],
-    queryFn: async () => {
-      const response = await api.get('/users/profile');
-      return response.data?.data;
-    },
-    enabled: isAuthenticated && user?.role === 'candidate',
-    staleTime: 1000 * 60 * 5,
-  });
+  // 2. User profile details are already available via AuthContext (loaded from GET /auth/me).
+  // No separate fetch needed — user already includes the full profile sub-document.
+  const userProfile = user;
 
   // 3. Fetch candidate applications (query check for already applied check)
   const {
@@ -468,45 +460,7 @@ export default function JobDetailPage() {
             )}
           </div>
 
-          {/* Company details preview card */}
-          {company && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                About the Company
-              </h4>
-              <div className="space-y-3 text-xs">
-                <div>
-                  <h5 className="font-bold text-slate-800 dark:text-slate-100">
-                    {company.name}
-                  </h5>
-                  {company.industry && (
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider block mt-0.5">
-                      {company.industry}
-                    </span>
-                  )}
-                </div>
-                
-                {company.location && (
-                  <p className="text-slate-600 dark:text-slate-350 font-semibold flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Headquarters: {company.location}</span>
-                  </p>
-                )}
-
-                {company.website && (
-                  <a
-                    href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-650 dark:text-indigo-400 hover:underline"
-                  >
-                    <span>Visit Company Site</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Right sidebar column content */}
 
         </div>
 

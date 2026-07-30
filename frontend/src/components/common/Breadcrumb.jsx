@@ -7,23 +7,42 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { useRouteMeta } from '../../hooks/useRouteMeta.js';
 import { ROUTES } from '../../constants/routes.js';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
 export function Breadcrumb({ overrides = {} }) {
+  const { user } = useAuth();
   const meta = useRouteMeta();
-  const segments = meta?.breadcrumb || [];
+  const rawSegments = meta?.breadcrumb || [];
 
-  if (segments.length === 0) return null;
+  if (rawSegments.length === 0) return null;
 
-  // Resolves the link for historic steps inside the breadcrumb trail.
-  const resolveSegmentPath = (index) => {
-    // Basic heuristics:
-    if (index === 0) return ROUTES.HOME;
-    if (segments[index] === 'Jobs') return ROUTES.JOBS;
+  const getDashboardPath = () => {
+    if (!user) return ROUTES.HOME;
+    if (user.role === 'recruiter') return ROUTES.RECRUITER.DASHBOARD;
+    if (user.role === 'hiring_manager') return ROUTES.HM.DASHBOARD;
+    return ROUTES.CANDIDATE.DASHBOARD;
+  };
+
+  const resolveSegmentPath = (segment) => {
+    if (segment === 'Dashboard') return getDashboardPath();
+    if (segment === 'Home') return ROUTES.HOME;
+    if (segment === 'Jobs') {
+      if (user?.role === 'recruiter') return ROUTES.RECRUITER.JOBS;
+      if (user?.role === 'hiring_manager') return ROUTES.HM.JOBS;
+      return ROUTES.JOBS;
+    }
+    if (segment === 'Applications') {
+      return ROUTES.CANDIDATE.APPLICATIONS;
+    }
+    if (segment === 'Notifications') {
+      if (user?.role === 'recruiter') return ROUTES.RECRUITER.NOTIFICATIONS;
+      if (user?.role === 'hiring_manager') return ROUTES.HM.NOTIFICATIONS;
+      return ROUTES.CANDIDATE.NOTIFICATIONS;
+    }
     return '#';
   };
 
   const resolveLabel = (segment) => {
-    // If the segment starts with a colon (e.g. :jobTitle), check if an override is provided
     if (segment.startsWith(':')) {
       return overrides[segment] || segment.replace(':', '').replace(/([A-Z])/g, ' $1').trim();
     }
@@ -32,39 +51,37 @@ export function Breadcrumb({ overrides = {} }) {
 
   return (
     <nav className="flex" aria-label="Breadcrumb">
-      <ol className="inline-flex items-center space-x-1.5 md:space-x-2.5 text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400">
-        <li className="inline-flex items-center">
-          <Link
-            to={ROUTES.HOME}
-            className="inline-flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-ring rounded"
-            aria-label="Home page"
-          >
-            <Home className="w-3.5 h-3.5 shrink-0" />
-            <span className="hidden sm:inline">Home</span>
-          </Link>
-        </li>
-
-        {segments.map((segment, index) => {
-          const isLast = index === segments.length - 1;
-          const path = resolveSegmentPath(index);
+      <ol className="inline-flex items-center space-x-1.5 md:space-x-2 text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400">
+        {rawSegments.map((segment, index) => {
+          const isFirst = index === 0;
+          const isLast = index === rawSegments.length - 1;
+          const path = resolveSegmentPath(segment);
           const label = resolveLabel(segment);
 
           return (
             <li key={index} className="inline-flex items-center">
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400 mx-1 shrink-0" aria-hidden="true" />
+              {!isFirst && (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 mx-1 shrink-0" aria-hidden="true" />
+              )}
               {isLast || path === '#' ? (
                 <span
-                  className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[120px] sm:max-w-xs"
+                  className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[140px] sm:max-w-xs inline-flex items-center"
                   aria-current="page"
                 >
+                  {isFirst && (segment === 'Dashboard' || segment === 'Home') && (
+                    <Home className="w-3.5 h-3.5 shrink-0 mr-1.5 text-slate-500" />
+                  )}
                   {label}
                 </span>
               ) : (
                 <Link
                   to={path}
-                  className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-ring rounded"
+                  className="inline-flex items-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-ring rounded"
                 >
-                  {label}
+                  {isFirst && (segment === 'Dashboard' || segment === 'Home') && (
+                    <Home className="w-3.5 h-3.5 shrink-0 mr-1.5 text-slate-400" />
+                  )}
+                  <span>{label}</span>
                 </Link>
               )}
             </li>

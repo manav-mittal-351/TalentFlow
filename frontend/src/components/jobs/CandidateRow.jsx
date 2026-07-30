@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Star, Eye, ChevronDown } from 'lucide-react';
+import { Star, Eye } from 'lucide-react';
 import { cn } from '../../utils/cn.js';
 
 // Status badge classes
@@ -26,14 +26,11 @@ export const CandidateRow = React.memo(function CandidateRow({
   application,
   onViewProfile,
   onStatusUpdateClick,
-  activeMenuId,
-  onToggleMenu,
 }) {
   const { _id, candidate, status, appliedAt, averageScore } = application;
   const name = candidate?.name || 'Unknown Candidate';
   const email = candidate?.email || '';
   const headline = candidate?.profile?.headline || 'No headline';
-  const isMenuOpen = activeMenuId === _id;
 
   const getInitials = () => {
     return name
@@ -98,49 +95,33 @@ export const CandidateRow = React.memo(function CandidateRow({
       </td>
 
       {/* 5. Row Actions */}
-      <td className="py-4 pl-3 pr-4 text-right relative">
-        <div className="inline-flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150">
+      <td className="py-4 pl-3 pr-4 text-right">
+        <div className="inline-flex items-center gap-2 justify-end">
           <button
             onClick={() => onViewProfile(_id)}
-            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1 shadow-sm focus-ring"
+            className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-xs focus-ring transition-colors"
             type="button"
+            title="View candidate profile"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-3.5 h-3.5 text-slate-400" />
             <span>View</span>
           </button>
-          
-          <div className="relative">
-            <button
-              onClick={() => onToggleMenu(_id)}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1 shadow-sm focus-ring"
-              aria-expanded={isMenuOpen}
-              type="button"
-            >
-              <span>Status</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
 
-            {isMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => onToggleMenu(null)} />
-                <div className="absolute right-0 mt-1 w-44 rounded-xl border border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-md z-50 py-1.5 animate-in fade-in duration-100 flex flex-col items-stretch text-left">
-                  {Object.keys(STAGE_BADGES).map((stageKey) => (
-                    <button
-                      key={stageKey}
-                      onClick={() => onStatusUpdateClick(_id, stageKey)}
-                      className={cn(
-                        'px-4 py-2 text-xs font-semibold text-left text-slate-700 dark:text-slate-250 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors',
-                        status === stageKey && 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/20'
-                      )}
-                      type="button"
-                    >
-                      {formatStage(stageKey)}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          <select
+            value={status}
+            onChange={(e) => onStatusUpdateClick(_id, e.target.value)}
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-bold focus-ring cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-xs"
+            aria-label="Update candidate stage status"
+          >
+            <option value="applied">Applied</option>
+            <option value="under_review">Under Review</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="interview">Interviewing</option>
+            <option value="offer">Offered</option>
+            <option value="hired">Hired</option>
+            <option value="rejected">Rejected</option>
+            <option value="withdrawn">Withdrawn</option>
+          </select>
         </div>
       </td>
     </tr>

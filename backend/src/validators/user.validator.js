@@ -2,49 +2,80 @@
 // express-validator arrays for candidate profile and saved jobs.
 // Doc reference: Document 5 — API Design §9 (User / Profile Routes)
 //                Document 4 — Database Schema §1 (users fields & regexes)
+//
+// NOTE on empty-string handling:
+//   `.optional({ values: 'falsy' })` treats '', null, and undefined as absent,
+//   so the subsequent `.isURL()` / `.matches()` check is skipped entirely.
+//   This mirrors the Mongoose schema's `^$|^pattern` match regexes which
+//   also permit empty strings for optional fields.
 
 import { body, query, param } from 'express-validator';
+
+// ─── Reusable URL validator factory ───────────────────────────────────────────
+// Produces a chain that:
+//   • skips validation when the value is empty/null/undefined
+//   • validates the URL is a proper HTTP(S) URL when a value is present
+//   • optionally enforces a hostname-specific regex for branded links
+const urlField = (field, options = {}) => {
+  const { hostnamePattern, message } = options;
+  let chain = body(field)
+    .optional({ values: 'falsy' })  // skip when '', null, or undefined
+    .trim()
+    .isURL({ protocols: ['http', 'https'], require_protocol: true })
+    .withMessage(`${field}: Must be a valid URL — include http:// or https:// (e.g. https://example.com)`);
+
+  if (hostnamePattern) {
+    chain = chain
+      .matches(hostnamePattern)
+      .withMessage(message || `${field}: Invalid URL format`);
+  }
+
+  return chain;
+};
 
 // ─── PUT /users/profile — Candidate ───────────────────────────────────────────
 export const updateProfileValidator = [
   body('headline')
     .optional()
     .trim()
-    .isLength({ max: 150 }).withMessage('Headline cannot exceed 150 characters'),
+    .isLength({ max: 150 }).withMessage('headline: Headline cannot exceed 150 characters'),
 
   body('bio')
     .optional()
     .trim()
-    .isLength({ max: 1000 }).withMessage('Bio cannot exceed 1000 characters'),
+    .isLength({ max: 1000 }).withMessage('bio: Bio cannot exceed 1000 characters'),
 
   body('phone')
-    .optional()
+    .optional({ values: 'falsy' })   // allow empty string (field cleared)
     .trim()
     .matches(/^\+?[0-9\s\-().]{7,20}$/)
-    .withMessage('Please enter a valid phone number'),
+    .withMessage('phone: Please enter a valid phone number'),
 
   body('location')
     .optional()
     .trim()
-    .isLength({ max: 100 }).withMessage('Location cannot exceed 100 characters'),
+    .isLength({ max: 100 }).withMessage('location: Location cannot exceed 100 characters'),
 
-  body('portfolioUrl')
-    .optional()
-    .trim()
-    .matches(/^(https?:\/\/).+/)
-    .withMessage('Portfolio URL must start with http:// or https://'),
+  // ── Social / Portfolio links ──────────────────────────────────────────────
+  urlField('portfolioUrl'),
 
-  body('githubUrl')
-    .optional()
-    .trim()
-    .matches(/^(https?:\/\/(www\.)?github\.com\/).+/)
-    .withMessage('Must be a valid GitHub URL (github.com/...)'),
+  urlField('githubUrl', {
+    hostnamePattern: /^https?:\/\/(www\.)?github\.com\/.+/,
+    message:         'GitHub URL must include your username — e.g. https://github.com/yourusername',
+  }),
 
-  body('linkedinUrl')
-    .optional()
-    .trim()
-    .matches(/^(https?:\/\/(www\.)?linkedin\.com\/).+/)
-    .withMessage('Must be a valid LinkedIn URL (linkedin.com/...)'),
+  urlField('linkedinUrl', {
+    hostnamePattern: /^https?:\/\/(www\.)?linkedin\.com\/.+/,
+    message:         'LinkedIn URL must include your profile path — e.g. https://linkedin.com/in/yourusername',
+  }),
+
+  // Extra free-form link slots — accept any valid http/https URL
+  urlField('twitterUrl'),
+  urlField('leetcodeUrl'),
+  urlField('codechefUrl'),
+  urlField('hackerrankUrl'),
+  urlField('behanceUrl'),
+  urlField('dribbbleUrl'),
 ];
 
 // ─── GET /users/saved-jobs — Candidate (query validation) ──────────────────────

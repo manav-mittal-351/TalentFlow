@@ -9,9 +9,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { registerSchema } from '../../utils/validators.js';
 import { ROUTES } from '../../constants/routes.js';
+import { ROLES } from '../../constants/roles.js';
 import api from '../../services/api.js';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Lock, Mail, User, Loader2 } from 'lucide-react';
+import Logo from '../../components/common/Logo.jsx';
+import { getRoleDashboard } from '../../utils/routePermissions.js';
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -26,7 +29,12 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { 
+      name: '', 
+      email: '', 
+      password: '',
+      role: ROLES.CANDIDATE,
+    },
   });
 
   const onSubmit = async (data) => {
@@ -40,8 +48,8 @@ export default function RegisterPage() {
       login(token, user);
       toast.success('Registration successful! Welcome to TalentFlow.');
 
-      // Default registration route targets Candidate Dashboard
-      navigate(ROUTES.CANDIDATE.DASHBOARD, { replace: true });
+      // Route redirection matching user role dashboard
+      navigate(getRoleDashboard(user.role), { replace: true });
     } catch (err) {
       console.error('Registration request failed:', err);
       const errMsg = err.response?.data?.message || 'Registration failed. Please try again.';
@@ -58,9 +66,8 @@ export default function RegisterPage() {
         
         {/* Header Heading */}
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md mb-4">
-            T
-          </div>
+          <Logo size="xl" showText={false} className="justify-center mb-4" />
+
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
             Create candidate profile
           </h2>

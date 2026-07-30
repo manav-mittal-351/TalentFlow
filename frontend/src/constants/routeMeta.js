@@ -158,6 +158,19 @@ export const ROUTE_META = {
     showInSidebar: true,
     breadcrumb: ['Dashboard'],
   },
+  [ROUTES.JOBS]: {
+    title: 'Find Jobs',
+    icon: Briefcase,
+    roles: [ROLES.CANDIDATE],
+    requiresAuth: false,
+    layout: 'public',
+    showInSidebar: true,
+    breadcrumb: ['Dashboard', 'Jobs'],
+    meta: {
+      title: 'Explore Careers — TalentFlow',
+      description: 'Search and filter open jobs at premium companies on our global board.',
+    },
+  },
   [ROUTES.CANDIDATE.APPLICATIONS]: {
     title: 'My Applications',
     icon: FileText,
@@ -216,19 +229,6 @@ export const ROUTE_META = {
     meta: {
       title: 'TalentFlow — Recruitment Management Platform',
       description: 'Find your next career opportunity and apply to premium positions.',
-    },
-  },
-  [ROUTES.JOBS]: {
-    title: 'Careers Board',
-    icon: Briefcase,
-    roles: [],
-    requiresAuth: false,
-    layout: 'public',
-    showInSidebar: false,
-    breadcrumb: ['Home', 'Careers'],
-    meta: {
-      title: 'Explore Careers — TalentFlow',
-      description: 'Search and filter open jobs at premium companies on our global board.',
     },
   },
   [ROUTES.JOB_DETAIL]: {

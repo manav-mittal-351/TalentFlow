@@ -81,7 +81,7 @@ export default function JobPipelinePage() {
   const appsList = useMemo(() => appsResponse?.data || [], [appsResponse]);
   const pagination = appsResponse?.pagination || { page: 1, limit: 10, total: 0, totalPages: 1 };
 
-  // 3. Status Mutation: Calls PATCH /api/v1/applications/:id/status
+  // 3. Candidate Application Status Mutation: Calls PATCH /api/v1/applications/:id/status
   const statusMutation = useMutation({
     mutationFn: async ({ appId, nextStatus }) => {
       const response = await api.patch(`/applications/${appId}/status`, { status: nextStatus });
@@ -89,14 +89,16 @@ export default function JobPipelinePage() {
     },
     onSuccess: (data) => {
       toast.success(data?.message || 'Candidate stage status updated successfully');
-      // Invalidate relevant query list
-      queryClient.invalidateQueries({ queryKey: ['jobApplications', jobId] });
+      // Invalidate relevant query lists and force instant refetch
+      queryClient.invalidateQueries({ queryKey: ['jobApplications'] });
+      refetchApps();
       setActiveMenuId(null);
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to update candidate status');
     },
   });
+
 
   // Toggle Dropdown actions
   const toggleMenu = useCallback((appId) => {
@@ -184,16 +186,20 @@ export default function JobPipelinePage() {
     );
   }
 
-  // Create Job status display tag
+  // Job status display badge (Read-only status indicator)
   const getJobStatusBadge = () => {
-    const base = 'inline-flex items-center text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ml-2';
+    const base = 'inline-flex items-center text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ml-3';
     switch (jobData?.status) {
       case 'published':
-        return <span className={`${base} bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400`}>Published</span>;
+        return <span className={`${base} bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800`}>Published</span>;
       case 'draft':
-        return <span className={`${base} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400`}>Draft</span>;
+        return <span className={`${base} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700`}>Draft</span>;
+      case 'closed':
+        return <span className={`${base} bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800`}>Closed</span>;
+      case 'archived':
+        return <span className={`${base} bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800`}>Archived</span>;
       default:
-        return <span className={`${base} bg-rose-50 dark:bg-rose-950/30 text-rose-650 dark:text-rose-400`}>{jobData?.status}</span>;
+        return <span className={`${base} bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400`}>{jobData?.status}</span>;
     }
   };
 

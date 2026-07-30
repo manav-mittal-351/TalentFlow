@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 function ShortlistedCell({ jobId }) {
+  const { user } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ['jobShortlistedCount', jobId],
     queryFn: async () => {
@@ -29,6 +30,7 @@ function ShortlistedCell({ jobId }) {
       });
       return response.data?.pagination?.total || 0;
     },
+    enabled: user?.role === 'hiring_manager',
     staleTime: 1000 * 60 * 5, // 5 min cache
   });
 
@@ -62,6 +64,7 @@ export default function HMJobsPage() {
       });
       return response.data;
     },
+    enabled: user?.role === 'hiring_manager',
     staleTime: 1000 * 60 * 5, // 5 min cache
     keepPreviousData: true,
   });

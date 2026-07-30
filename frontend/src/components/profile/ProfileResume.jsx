@@ -8,6 +8,7 @@ import { useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { FileText, Upload, DownloadCloud, CheckCircle2, AlertCircle } from 'lucide-react';
 import api from '../../services/api.js';
+import { env } from '../../config/env.js';
 import toast from 'react-hot-toast';
 
 export function ProfileResume({ profile, onUpdate }) {
@@ -80,7 +81,7 @@ export function ProfileResume({ profile, onUpdate }) {
               </span>
             </div>
             <a
-              href={`${import.meta.env.VITE_API_URL?.replace('/api/v1', '')}/${resumeUrl}`}
+              href={`${env.API_URL.replace('/api/v1', '')}/${resumeUrl}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 shrink-0 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 transition-colors"

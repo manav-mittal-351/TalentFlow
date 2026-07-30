@@ -4,13 +4,32 @@
 import React from 'react';
 import { Mail, MapPin, Briefcase, GraduationCap } from 'lucide-react';
 
-export const CandidateProfileCard = React.memo(function CandidateProfileCard({ candidate }) {
+export const CandidateProfileCard = React.memo(function CandidateProfileCard({ candidate, job, coverNote }) {
   const name = candidate?.name || 'Unknown Candidate';
   const email = candidate?.email || '';
   const profile = candidate?.profile || {};
-  const headline = profile.headline || 'No professional headline provided';
+  const headline = profile.headline || (job?.title ? `Applicant for ${job.title}` : 'Candidate Applicant');
   const location = profile.location || 'Location unspecified';
-  const skills = profile.skills || [];
+
+  // Fallback skills extraction if profile.skills is empty
+  let skills = profile.skills || [];
+  if (skills.length === 0 && coverNote) {
+    const textSkills = [];
+    const keywords = [
+      'JavaScript', 'TypeScript', 'React', 'Node.js', 'Express', 'Python', 'Java',
+      'HTML', 'CSS', 'SQL', 'MongoDB', 'AWS', 'Docker', 'Git', 'Agile',
+      'Communication', 'Leadership', 'Problem Solving', 'Management'
+    ];
+    keywords.forEach((kw) => {
+      if (coverNote.toLowerCase().includes(kw.toLowerCase())) {
+        textSkills.push(kw);
+      }
+    });
+    if (textSkills.length > 0) {
+      skills = textSkills;
+    }
+  }
+
   const experience = profile.experience || [];
   const education = profile.education || [];
 

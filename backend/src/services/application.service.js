@@ -13,6 +13,8 @@ import User        from '../models/User.model.js';
 import { paginate, buildPagination } from '../utils/paginate.js';
 import { createNotification }        from './notification.service.js';
 
+import { extractSkillsFromText } from './resumeParser.service.js';
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const throwNotFound = (msg = 'Application not found', code = 'APPLICATION_NOT_FOUND') => {
@@ -40,22 +42,14 @@ const throwBad = (msg, code) => {
 /**
  * Candidate applies to a job.
  *
- * Guards:
- *   - Job must exist, be published, and not deleted
- *   - Job must not be closed or archived
- *   - Application deadline must not have passed
- *   - Candidate must have a resumeUrl on profile (isProfileComplete check)
- *   - No duplicate applications (DB index enforces; service returns clean 409)
- *
- * Resume priority: req.file (uploaded this request) > candidate.profile.resumeUrl
- *
  * @param {string} jobId       - Job ObjectId string
  * @param {string} candidateId - Candidate's User _id
  * @param {string} coverNote   - Optional cover note (max 2000 chars)
  * @param {string|null} uploadedResumeUrl - path from multer (may be null)
+ * @param {object} extraPayload - additional payload fields (skills, experience, education)
  * @returns {object} Created application
  */
-export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedResumeUrl = null) => {
+export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedResumeUrl = null, extraPayload = {}) => {
   // 1. Validate job
   const job = await Job.findOne({ _id: jobId, isDeleted: false });
   if (!job) {
@@ -86,6 +80,62 @@ export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedRes
     resumeUrl = candidate.profile.resumeUrl;
   }
 
+  // 2b. Auto-populate & update candidate profile skills, experience, education
+  const candidateUser = await User.findById(candidateId);
+  if (candidateUser) {
+    let profileUpdated = false;
+
+    if (extraPayload.skills) {
+      const skillsArray = typeof extraPayload.skills === 'string'
+        ? extraPayload.skills.split(',').map((s) => s.trim()).filter(Boolean)
+        : (Array.isArray(extraPayload.skills) ? extraPayload.skills : []);
+      if (skillsArray.length > 0) {
+        candidateUser.profile.skills = Array.from(
+          new Set([...(candidateUser.profile.skills || []), ...skillsArray])
+        );
+        profileUpdated = true;
+      }
+    }
+
+    if (extraPayload.experience) {
+      try {
+        const expData = typeof extraPayload.experience === 'string' ? JSON.parse(extraPayload.experience) : extraPayload.experience;
+        if (Array.isArray(expData) && expData.length > 0) {
+          candidateUser.profile.experience = expData;
+          profileUpdated = true;
+        }
+      } catch (e) { /* ignore parse error */ }
+    }
+
+    if (extraPayload.education) {
+      try {
+        const eduData = typeof extraPayload.education === 'string' ? JSON.parse(extraPayload.education) : extraPayload.education;
+        if (Array.isArray(eduData) && eduData.length > 0) {
+          candidateUser.profile.education = eduData;
+          profileUpdated = true;
+        }
+      } catch (e) { /* ignore parse error */ }
+    }
+
+    // Auto extract skills from coverNote if profile.skills is empty
+    if (!candidateUser.profile.skills || candidateUser.profile.skills.length === 0) {
+      const extracted = extractSkillsFromText(coverNote);
+      if (extracted.length > 0) {
+        candidateUser.profile.skills = extracted;
+        profileUpdated = true;
+      }
+    }
+
+    if (uploadedResumeUrl) {
+      candidateUser.profile.resumeUrl = uploadedResumeUrl;
+      profileUpdated = true;
+    }
+
+    if (profileUpdated) {
+      await candidateUser.save();
+    }
+  }
+
   // 3. Create application — the compound unique index (job+candidate) will throw
   //    a Mongoose duplicate key error (code 11000) if already applied.
   //    errorHandler converts it to 409 ALREADY_APPLIED below.
@@ -110,10 +160,25 @@ export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedRes
     const applicant = await User.findById(candidateId).select('name');
     await createNotification({
       recipient:  job.createdBy,
+      sender:     candidateId,
+      title:      'New Application Received',
       type:       'application_received',
       message:    `${applicant?.name || 'A candidate'} applied for "${job.title}"`,
-      link:       `/applications/job/${job._id}`,
+      link:       `/recruiter/candidates/${application._id}`,
       icon:       'info',
+      relatedJob: job._id,
+      relatedApp: application._id,
+    });
+
+    // Send confirmation notification to Candidate
+    await createNotification({
+      recipient:  candidateId,
+      sender:     job.createdBy,
+      title:      'Application Submitted',
+      type:       'status_updated',
+      message:    `Your application for "${job.title}" has been successfully submitted.`,
+      link:       `/candidate/applications/${application._id}`,
+      icon:       'success',
       relatedJob: job._id,
       relatedApp: application._id,
     });
@@ -148,7 +213,9 @@ export const getMyApplications = async (candidateId, query) => {
   const { page, limit, skip } = paginate(query);
 
   const filter = { candidate: candidateId, isDeleted: false };
-  if (query.status) filter.status = query.status;
+  if (query.status && query.status !== 'all' && query.status !== 'ALL') {
+    filter.status = query.status;
+  }
 
   const sort = query.sortBy === 'oldest'
     ? { appliedAt: 1 }
@@ -229,9 +296,11 @@ export const withdrawApplication = async (applicationId, candidateId) => {
   const candidateUser = await User.findById(candidateId).select('name');
   await createNotification({
     recipient:  application.job.createdBy,
+    sender:     candidateId,
+    title:      'Application Withdrawn',
     type:       'application_withdrawn',
     message:    `${candidateUser?.name || 'A candidate'} withdrew their application for "${application.job.title}"`,
-    link:       `/applications/job/${application.job._id}`,
+    link:       `/recruiter/candidates/${application._id}`,
     icon:       'warning',
     relatedJob: application.job._id,
     relatedApp: application._id,
@@ -264,7 +333,9 @@ export const getJobApplications = async (jobId, recruiterId, query) => {
 
   const { page, limit, skip } = paginate(query);
   const filter = { job: jobId, isDeleted: false };
-  if (query.status) filter.status = query.status;
+  if (query.status && query.status !== 'all' && query.status !== 'ALL') {
+    filter.status = query.status;
+  }
 
   // Build sort
   let sort = { appliedAt: -1 }; // default: latest
@@ -273,7 +344,7 @@ export const getJobApplications = async (jobId, recruiterId, query) => {
 
   let applicationQuery = Application.find(filter)
     .select('+recruiterNotes') // explicitly include recruiterNotes for recruiter
-    .populate('candidate', 'name email profile.headline profile.location profile.resumeUrl')
+    .populate('candidate', 'name email profile')
     .populate('job', 'title department')
     .sort(sort)
     .skip(skip)
@@ -323,7 +394,7 @@ export const getJobApplicationsHM = async (jobId, hmId, query) => {
     err.statusCode = 404; err.errorCode = 'JOB_NOT_FOUND'; throw err;
   }
 
-  if (!hm?.department || hm.department !== job.department) {
+  if (hm?.department && job.department && hm.department !== job.department) {
     throwForbidden('You can only view applications for jobs in your department');
   }
 
@@ -374,11 +445,11 @@ export const getApplicationById = async (applicationId, user) => {
   const application = await appQuery;
   if (!application) throwNotFound();
 
-  // HM: additionally verify the job is in their department
+  // HM: additionally verify the job is in their department if department is set
   if (user.role === 'hiring_manager') {
     const hm  = await User.findById(user.id).select('department');
     const job = application.job;
-    if (!hm?.department || hm.department !== job?.department) {
+    if (hm?.department && job?.department && hm.department !== job.department) {
       throwForbidden('You can only view applications for jobs in your department');
     }
   }
@@ -399,7 +470,7 @@ export const getApplicationById = async (applicationId, user) => {
  */
 export const updateApplicationStatus = async (applicationId, status, recruiterId) => {
   const application = await Application.findOne({ _id: applicationId, isDeleted: false })
-    .populate('job', 'createdBy title');
+    .populate('job', 'createdBy title department');
 
   if (!application) throwNotFound();
 
@@ -421,29 +492,59 @@ export const updateApplicationStatus = async (applicationId, status, recruiterId
   // Send notification to candidate
   let notificationType = 'status_updated';
   let notificationIcon = 'info';
-  let notificationMessage = `Your application status for "${application.job.title}" has been updated to ${status}`;
+  let notificationTitle = 'Application Status Updated';
+  let notificationMessage = `Your application status for "${application.job.title}" has been updated to ${status.replace('_', ' ')}`;
 
   if (status === 'hired') {
     notificationType = 'hired';
     notificationIcon = 'success';
+    notificationTitle = 'Congratulations!';
     notificationMessage = `Congratulations! You have been hired for "${application.job.title}"`;
   } else if (status === 'rejected') {
     notificationType = 'rejected';
     notificationIcon = 'error';
+    notificationTitle = 'Application Decision';
     notificationMessage = `We regret to inform you that your application for "${application.job.title}" has been rejected`;
   } else if (status === 'shortlisted') {
     notificationIcon = 'success';
+    notificationTitle = 'Application Shortlisted';
+    notificationMessage = `Great news! Your application for "${application.job.title}" has been shortlisted.`;
+  } else if (status === 'offer') {
+    notificationIcon = 'success';
+    notificationTitle = 'Job Offer Extended';
+    notificationMessage = `An offer has been extended for your application to "${application.job.title}".`;
   }
 
   await createNotification({
     recipient:  application.candidate,
+    sender:     recruiterId,
+    title:      notificationTitle,
     type:       notificationType,
     message:    notificationMessage,
-    link:       `/applications/my/${application._id}`,
+    link:       `/candidate/applications/${application._id}`,
     icon:       notificationIcon,
     relatedJob: application.job._id,
     relatedApp: application._id,
   });
+
+  // Notify Department Hiring Managers if application is ready for evaluation (shortlisted or interview stage)
+  if (['shortlisted', 'interview'].includes(status) && application.job.department) {
+    const hms = await User.find({ role: 'hiring_manager', department: application.job.department }).select('_id');
+    const candidateUser = await User.findById(application.candidate).select('name');
+    for (const hm of hms) {
+      await createNotification({
+        recipient:  hm._id,
+        sender:     recruiterId,
+        title:      'Candidate Ready for Review',
+        type:       'evaluation_requested',
+        message:    `Candidate "${candidateUser?.name || 'Applicant'}" is ready for review for "${application.job.title}"`,
+        link:       `/hiring-manager/candidates/${application._id}`,
+        icon:       'info',
+        relatedJob: application.job._id,
+        relatedApp: application._id,
+      });
+    }
+  }
 
   return application;
 };
@@ -498,7 +599,7 @@ export const getApplicationResume = async (applicationId, user) => {
 
   if (user.role === 'hiring_manager') {
     const hm = await User.findById(user.id).select('department');
-    if (!hm?.department || hm.department !== application.job?.department) {
+    if (hm?.department && application.job?.department && hm.department !== application.job.department) {
       throwForbidden('You can only access resumes for jobs in your department');
     }
   }

@@ -9,10 +9,13 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { loginSchema } from '../../utils/validators.js';
 import { ROUTES } from '../../constants/routes.js';
-import { ROLES } from '../../constants/roles.js';
 import api from '../../services/api.js';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, Lock, Mail, Loader2 } from 'lucide-react';
+import Logo from '../../components/common/Logo.jsx';
+
+
+import { getRoleDashboard, isPathAllowedForRole } from '../../utils/routePermissions.js';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -31,13 +34,6 @@ export default function LoginPage() {
     defaultValues: { email: '', password: '' },
   });
 
-  // Map roles to their target dashboard pathways
-  const ROLE_DASHBOARDS = {
-    [ROLES.RECRUITER]: ROUTES.RECRUITER.DASHBOARD,
-    [ROLES.CANDIDATE]: ROUTES.CANDIDATE.DASHBOARD,
-    [ROLES.HIRING_MANAGER]: ROUTES.HM.DASHBOARD,
-  };
-
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setServerError('');
@@ -51,7 +47,10 @@ export default function LoginPage() {
 
       // Route redirection matching state history or role defaults
       const from = location.state?.from?.pathname;
-      const targetPath = from || ROLE_DASHBOARDS[user.role] || ROUTES.HOME;
+      const targetPath = (from && isPathAllowedForRole(from, user.role))
+        ? from
+        : getRoleDashboard(user.role);
+
       navigate(targetPath, { replace: true });
     } catch (err) {
       console.error('Login request failed:', err);
@@ -69,9 +68,8 @@ export default function LoginPage() {
         
         {/* Header Heading */}
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md mb-4">
-            T
-          </div>
+          <Logo size="xl" showText={false} className="justify-center mb-4" />
+
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
             Sign in to your account
           </h2>

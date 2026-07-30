@@ -29,7 +29,7 @@ const safeUser = (user) => ({
  * @returns {{ token: string, user: object }}
  * @throws 409 EMAIL_ALREADY_EXISTS — if email is already in use
  */
-export const registerUser = async ({ name, email, password, role = 'candidate' }) => {
+export const registerUser = async ({ name, email, password, role = 'candidate', department = null }) => {
   // Check for duplicate email before hashing (faster fail path)
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {
@@ -50,6 +50,7 @@ export const registerUser = async ({ name, email, password, role = 'candidate' }
     email,
     passwordHash,
     role,
+    department: department || (role === 'hiring_manager' ? 'Engineering' : null),
   });
 
   // Generate JWT — payload: { id, role }

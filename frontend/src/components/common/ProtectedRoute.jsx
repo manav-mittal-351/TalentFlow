@@ -1,11 +1,8 @@
-// ─── components/common/ProtectedRoute.jsx ───────────────────────────────────
-// Role-based auth protection routing gate. Resolves current session context
-// and handles redirections for unauthorized page accesses.
-
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { PageSkeleton } from './PageSkeleton.jsx';
 import { ROUTES } from '../../constants/routes.js';
+import { getRoleDashboard } from '../../utils/routePermissions.js';
 
 export function ProtectedRoute({ allowedRoles = [], children }) {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -21,9 +18,9 @@ export function ProtectedRoute({ allowedRoles = [], children }) {
     return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
-  // 3. Gate authenticated users with wrong roles
+  // 3. Gate authenticated users with wrong roles — redirect to their own dashboard
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+    return <Navigate to={getRoleDashboard(user?.role)} replace />;
   }
 
   // 4. Resolve children

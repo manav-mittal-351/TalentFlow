@@ -60,7 +60,12 @@ export const getNotifications = async (recipientId, query) => {
 
   const [notifications, total] = await Promise.all([
     Notification.find(filter)
-      .populate('relatedJob', 'title company')
+      .populate('sender', 'name email role')
+      .populate({
+        path: 'relatedJob',
+        select: 'title company',
+        populate: { path: 'company', select: 'name' },
+      })
       .populate('relatedApp', 'status')
       .sort({ createdAt: -1 })
       .skip(skip)

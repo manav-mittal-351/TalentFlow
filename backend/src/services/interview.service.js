@@ -122,9 +122,11 @@ export const scheduleInterview = async (payload, recruiterId) => {
   // Trigger notifications
   await createNotification({
     recipient:  application.candidate,
+    sender:     recruiterId,
+    title:      'Interview Scheduled',
     type:       'interview_scheduled',
     message:    `An interview has been scheduled for "${application.job?.title || 'the job'}"`,
-    link:       `/interviews/${interview._id}`,
+    link:       `/candidate/applications/${application._id}`,
     icon:       'info',
     relatedJob: application.job?._id,
     relatedApp: application._id,
@@ -133,9 +135,11 @@ export const scheduleInterview = async (payload, recruiterId) => {
   if (interviewerId) {
     await createNotification({
       recipient:  interviewerId,
+      sender:     recruiterId,
+      title:      'Interview Assigned',
       type:       'interview_scheduled',
       message:    `You have been assigned to conduct an interview for "${application.job?.title || 'the job'}"`,
-      link:       `/interviews/${interview._id}`,
+      link:       `/hiring-manager/candidates/${application._id}`,
       icon:       'info',
       relatedJob: application.job?._id,
       relatedApp: application._id,
@@ -229,7 +233,7 @@ export const getInterviewById = async (interviewId, user) => {
       // Fall back: check if HM's department matches job department
       const hm = await User.findById(id).select('department');
       const jobDept = interview.job?.department;
-      if (!hm?.department || hm.department !== jobDept) {
+      if (hm?.department && jobDept && hm.department !== jobDept) {
         throwForbidden('You can only view interviews for jobs in your department or assigned to you');
       }
     }
@@ -294,12 +298,14 @@ export const updateInterview = async (interviewId, updates, recruiterId) => {
   await interview.save();
 
   // Send notifications if schedule changed
-  if (updates.scheduledAt || updates.format || updates.location) {
+  if (updates.scheduledAt || updates.format || updates.location || updates.interviewerId) {
     await createNotification({
       recipient:  interview.candidate,
+      sender:     recruiterId,
+      title:      'Interview Details Updated',
       type:       'interview_scheduled',
       message:    `The details of your interview for "${interview.job?.title || 'the job'}" have been updated`,
-      link:       `/interviews/${interview._id}`,
+      link:       `/candidate/applications/${interview.application}`,
       icon:       'info',
       relatedJob: interview.job?._id,
       relatedApp: interview.application,
@@ -308,9 +314,11 @@ export const updateInterview = async (interviewId, updates, recruiterId) => {
     if (interview.interviewer) {
       await createNotification({
         recipient:  interview.interviewer,
+        sender:     recruiterId,
+        title:      'Interview Assignment Updated',
         type:       'interview_scheduled',
         message:    `The details of the interview for "${interview.job?.title || 'the job'}" have been updated`,
-        link:       `/interviews/${interview._id}`,
+        link:       `/hiring-manager/candidates/${interview.application}`,
         icon:       'info',
         relatedJob: interview.job?._id,
         relatedApp: interview.application,
@@ -366,9 +374,11 @@ export const updateInterviewStatus = async (interviewId, status, cancelledReason
   if (status === 'completed') {
     await createNotification({
       recipient:  interview.scheduledBy,
+      sender:     interview.candidate,
+      title:      'Interview Completed',
       type:       'interview_completed',
       message:    `Interview for "${interview.job?.title || 'the job'}" has been completed`,
-      link:       `/interviews/${interview._id}`,
+      link:       `/recruiter/candidates/${interview.application}`,
       icon:       'success',
       relatedJob: interview.job?._id,
       relatedApp: interview.application,
@@ -376,9 +386,11 @@ export const updateInterviewStatus = async (interviewId, status, cancelledReason
     // Send to candidate too
     await createNotification({
       recipient:  interview.candidate,
+      sender:     recruiterId,
+      title:      'Interview Completed',
       type:       'status_updated',
       message:    `Your interview for "${interview.job?.title || 'the job'}" has been completed`,
-      link:       `/interviews/${interview._id}`,
+      link:       `/candidate/applications/${interview.application}`,
       icon:       'success',
       relatedJob: interview.job?._id,
       relatedApp: interview.application,
@@ -386,9 +398,11 @@ export const updateInterviewStatus = async (interviewId, status, cancelledReason
   } else if (status === 'cancelled') {
     await createNotification({
       recipient:  interview.candidate,
+      sender:     recruiterId,
+      title:      'Interview Cancelled',
       type:       'interview_cancelled',
       message:    `Your interview for "${interview.job?.title || 'the job'}" has been cancelled`,
-      link:       `/interviews/${interview._id}`,
+      link:       `/candidate/applications/${interview.application}`,
       icon:       'warning',
       relatedJob: interview.job?._id,
       relatedApp: interview.application,
@@ -396,9 +410,11 @@ export const updateInterviewStatus = async (interviewId, status, cancelledReason
     if (interview.interviewer) {
       await createNotification({
         recipient:  interview.interviewer,
+        sender:     recruiterId,
+        title:      'Interview Cancelled',
         type:       'interview_cancelled',
         message:    `The interview for "${interview.job?.title || 'the job'}" has been cancelled`,
-        link:       `/interviews/${interview._id}`,
+        link:       `/hiring-manager/candidates/${interview.application}`,
         icon:       'warning',
         relatedJob: interview.job?._id,
         relatedApp: interview.application,

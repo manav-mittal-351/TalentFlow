@@ -79,19 +79,13 @@ export const getRecruiterJobs = async (req, res, next) => {
 
 // ─── GET /api/v1/jobs/hiring-manager/assigned — Hiring Manager ────────────────
 // Needs HM's department — fetched from the User document.
-// req.user only carries { id, role } from JWT — we must DB-fetch for department.
+// Falls back gracefully if department is not set yet.
 export const getHMJobs = async (req, res, next) => {
   try {
     const hmUser = await User.findById(req.user.id).select('department');
+    const department = hmUser?.department || req.query.department || 'Engineering';
 
-    if (!hmUser || !hmUser.department) {
-      const err = new Error('Hiring manager department not set. Please update your profile.');
-      err.statusCode = 400;
-      err.errorCode  = 'DEPARTMENT_NOT_SET';
-      throw err;
-    }
-
-    const { jobs, pagination } = await jobService.getHMJobs(hmUser.department, req.query);
+    const { jobs, pagination } = await jobService.getHMJobs(department, req.query);
     return paginatedSuccess(res, 'Assigned jobs fetched successfully', jobs, pagination);
   } catch (err) {
     next(err);

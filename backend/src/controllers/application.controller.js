@@ -25,7 +25,8 @@ export const applyToJob = async (req, res, next) => {
       req.params.jobId,
       req.user.id,
       req.body.coverNote ?? '',
-      uploadedResumeUrl
+      uploadedResumeUrl,
+      req.body
     );
 
     return success(res, 'Application submitted successfully', application, 201);

@@ -30,14 +30,23 @@ export function NotificationProvider({ children }) {
     if (!isAuthenticated) return;
     setIsLoading(true);
     try {
-      const response = await api.get('/notifications');
-      setNotifications(response.data.data?.notifications ?? []);
+      const response = await api.get('/notifications', { params: { limit: 50 } });
+      const list = Array.isArray(response.data.data)
+        ? response.data.data
+        : response.data.data?.notifications ?? [];
+      setNotifications(list);
     } catch (err) {
       console.error('Failed to fetch notifications list:', err);
     } finally {
       setIsLoading(false);
     }
   }, [isAuthenticated]);
+
+  const refetchNotifications = useCallback(() => {
+    if (!isAuthenticated) return;
+    fetchUnreadCount();
+    fetchNotifications();
+  }, [isAuthenticated, fetchUnreadCount, fetchNotifications]);
 
   const markAsRead = async (notificationId) => {
     try {
@@ -47,6 +56,7 @@ export function NotificationProvider({ children }) {
         prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
       );
       setUnreadCount((c) => Math.max(0, c - 1));
+      fetchUnreadCount();
       toast.success('Notification marked as read');
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
@@ -59,6 +69,7 @@ export function NotificationProvider({ children }) {
       await api.patch('/notifications/read-all');
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
+      fetchUnreadCount();
       toast.success('All notifications marked as read');
     } catch (err) {
       console.error('Failed to mark all as read:', err);
@@ -66,17 +77,26 @@ export function NotificationProvider({ children }) {
     }
   };
 
-  // Start polling when authenticated
+  // Start polling & setup event listener when authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      fetchUnreadCount();
-      fetchNotifications();
+      refetchNotifications();
+
+      // Listen for custom event dispatch to trigger instant refresh on actions
+      const handleCustomEvent = () => refetchNotifications();
+      window.addEventListener('tf_notification_update', handleCustomEvent);
 
       // Poll every 30 seconds for new alerts
       pollIntervalRef.current = setInterval(() => {
-        fetchUnreadCount();
-        fetchNotifications();
+        refetchNotifications();
       }, 30000);
+
+      return () => {
+        window.removeEventListener('tf_notification_update', handleCustomEvent);
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+        }
+      };
     } else {
       setNotifications([]);
       setUnreadCount(0);
@@ -84,13 +104,7 @@ export function NotificationProvider({ children }) {
         clearInterval(pollIntervalRef.current);
       }
     }
-
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
-  }, [isAuthenticated, fetchNotifications, fetchUnreadCount]);
+  }, [isAuthenticated, refetchNotifications]);
 
   return (
     <NotificationContext.Provider
@@ -100,10 +114,7 @@ export function NotificationProvider({ children }) {
         isLoading,
         markAsRead,
         markAllAsRead,
-        refetchNotifications: () => {
-          fetchUnreadCount();
-          fetchNotifications();
-        },
+        refetchNotifications,
       }}
     >
       {children}
