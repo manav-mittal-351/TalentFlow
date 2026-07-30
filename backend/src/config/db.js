@@ -15,9 +15,8 @@ dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
 export const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(env.MONGO_URI, {
-      // Mongoose 8 no longer needs the legacy options (useNewUrlParser, etc.)
-      // but these keep the connection resilient in production.
+    const mongoUri = env.MONGODB_URI || env.MONGO_URI;
+    const conn = await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
     });

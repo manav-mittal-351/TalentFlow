@@ -26,11 +26,27 @@ const app = express();
 app.use(helmet());
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
-// Only allows requests from the documented CLIENT_URL (Vite dev server / Vercel).
+// Allows requests from CLIENT_URL (supports comma-separated origins for Vercel & local dev)
+const allowedOrigins = (env.CLIENT_URL || '')
+  .split(',')
+  .map((originStr) => originStr.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: env.CLIENT_URL,
-    credentials: true, // allow cookies / Authorization headers cross-origin
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.length === 0 ||
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes('*') ||
+        env.NODE_ENV === 'development'
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
   })
 );
 
@@ -80,16 +96,16 @@ app.use('/api/v1', router);
 // ─── Static file serving — uploaded resumes ─────────────────────────────────
 // Serves resume files uploaded via POST /api/v1/users/resume and
 // POST /api/v1/applications/:jobId. Files are stored at backend/uploads/resumes/.
-// Access via: GET http://localhost:5000/uploads/resumes/<filename>
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 // Used by Render health checks and uptime monitors.
 app.get('/health', (_req, res) => {
   res.status(200).json({
-    success: true,
-    message: 'TalentFlow API is healthy',
+    status: 'ok',
     environment: env.NODE_ENV,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
   });
 });
 
