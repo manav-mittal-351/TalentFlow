@@ -162,11 +162,10 @@ export default function RegisterPage() {
               return (
                 <div
                   key={option.id}
-                  onClick={() => handleRoleSelect(option.id)}
-                  className="group relative p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-500 dark:hover:border-indigo-500 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                  className="group relative p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-md transition-all cursor-default flex flex-col justify-between"
                 >
                   <div className="space-y-4">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform select-none">
                       <Icon className="w-6 h-6" />
                     </div>
 
@@ -185,7 +184,7 @@ export default function RegisterPage() {
 
                     <ul className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
                       {option.features.map((feat, i) => (
-                        <li key={i} className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-350">
+                        <li key={i} className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-350 select-none">
                           <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                           <span>{feat}</span>
                         </li>
@@ -196,7 +195,12 @@ export default function RegisterPage() {
                   <div className="pt-6">
                     <button
                       type="button"
-                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold rounded-xl text-white bg-indigo-600 group-hover:bg-indigo-700 transition-all shadow-sm focus-ring"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRoleSelect(option.id);
+                      }}
+                      aria-label={`Continue as ${option.title}`}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] cursor-pointer transition-all shadow-sm focus-ring"
                     >
                       <span>Continue as {option.title}</span>
                       <ArrowRight className="w-4 h-4" />
