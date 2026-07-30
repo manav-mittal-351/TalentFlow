@@ -183,11 +183,12 @@ export default function CandidateDetailPage() {
   }, [statusMutation]);
 
   const handleScheduleSubmit = useCallback((data) => {
-    if (status === 'applied' || status === 'under_review') {
+    const currentStatus = application?.status;
+    if (currentStatus === 'applied' || currentStatus === 'under_review') {
       statusMutation.mutate('interview');
     }
     scheduleMutation.mutate(data);
-  }, [scheduleMutation, statusMutation, status]);
+  }, [scheduleMutation, statusMutation, application?.status]);
 
   const handleEditSubmit = useCallback((data) => {
     if (editingInterview?._id) {
