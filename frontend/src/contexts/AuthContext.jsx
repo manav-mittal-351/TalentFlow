@@ -4,6 +4,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api.js';
+import { queryClient } from '../lib/queryClient.js';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +24,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error('Failed to restore session:', error);
       localStorage.removeItem('tf_token');
+      queryClient.clear();
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -35,12 +37,17 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (token, userData) => {
+    // Purge any stale queries in memory before initializing a new user session
+    queryClient.clear();
     localStorage.setItem('tf_token', token);
     setUser(userData);
   };
 
   const logout = () => {
+    // Completely clear local storage, session storage, and memory cache
     localStorage.removeItem('tf_token');
+    sessionStorage.clear();
+    queryClient.clear();
     setUser(null);
   };
 

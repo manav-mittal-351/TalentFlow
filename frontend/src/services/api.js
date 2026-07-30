@@ -12,9 +12,15 @@ const api = axios.create({
 // ─── Request Interceptor: Attach JWT token ────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('tf_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Do not attach stale Authorization headers to public registration or login endpoints
+    const isPublicAuthRoute =
+      config.url?.endsWith('/auth/register') || config.url?.endsWith('/auth/login');
+
+    if (!isPublicAuthRoute) {
+      const token = localStorage.getItem('tf_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
