@@ -46,13 +46,13 @@ export default function RegisterPage() {
 
       // Update active session profiles
       login(token, user);
-      toast.success('Registration successful! Welcome to TalentFlow.');
+      toast.success('Account created! Welcome to TalentFlow.');
 
       // Route redirection matching user role dashboard
       navigate(getRoleDashboard(user.role), { replace: true });
     } catch (err) {
       console.error('Registration request failed:', err);
-      const errMsg = err.response?.data?.message || 'Registration failed. Please try again.';
+      const errMsg = err.response?.data?.message || 'We couldn\'t create your account. Please try again.';
       setServerError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -69,10 +69,10 @@ export default function RegisterPage() {
           <Logo size="xl" showText={false} className="justify-center mb-4" />
 
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">
-            Create candidate profile
+            Create your account
           </h2>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            Start applying to premium positions and tracking pipelines.
+            Explore exciting career opportunities and track your job applications.
           </p>
         </div>
 
@@ -199,10 +199,10 @@ export default function RegisterPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Registering...</span>
+                  <span>Creating Account...</span>
                 </>
               ) : (
-                <span>Register</span>
+                <span>Create Account</span>
               )}
             </button>
           </div>

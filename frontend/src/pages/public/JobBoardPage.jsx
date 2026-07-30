@@ -175,10 +175,10 @@ export default function JobBoardPage() {
               <AlertTriangle className="w-9 h-9 text-rose-500 animate-bounce" />
               <div>
                 <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
-                  Failed to fetch positions
+                  We couldn&apos;t load open positions
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Encountered an network error while pulling positions list.
+                  Please check your connection and try again.
                 </p>
               </div>
               <button
@@ -187,7 +187,7 @@ export default function JobBoardPage() {
                 type="button"
               >
                 <RotateCw className="w-3.5 h-3.5" />
-                Retry connection
+                Try Again
               </button>
             </div>
           ) : isLoading ? (
@@ -197,10 +197,10 @@ export default function JobBoardPage() {
               <Sparkles className="w-10 h-10 text-slate-350 dark:text-slate-650" />
               <div>
                 <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
-                  No matching jobs found
+                  No open positions found
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Try adjusting your search keywords, departments, or remote toggle option filters.
+                  No jobs matched your search criteria. Try adjusting your filters or search keywords.
                 </p>
               </div>
               <button
@@ -208,7 +208,7 @@ export default function JobBoardPage() {
                 className="text-xs font-semibold text-indigo-650 dark:text-indigo-400 hover:underline mt-1"
                 type="button"
               >
-                Reset search filters
+                Clear all filters
               </button>
             </div>
           ) : (

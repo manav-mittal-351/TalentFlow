@@ -124,11 +124,11 @@ export default function JobDetailPage() {
       }
     },
     onSuccess: () => {
-      toast.success(isSaved ? 'Job removed from saved bookmarks' : 'Job saved to bookmarks successfully');
+      toast.success(isSaved ? 'Job removed from bookmarks.' : 'Job saved to bookmarks.');
       queryClient.invalidateQueries({ queryKey: ['mySavedJobsDetails'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Failed to save job position');
+      toast.error(err.response?.data?.message || 'Failed to save job position.');
     },
   });
 
@@ -141,24 +141,24 @@ export default function JobDetailPage() {
       return response.data;
     },
     onSuccess: (res) => {
-      toast.success(res?.message || 'Application submitted successfully');
+      toast.success(res?.message || 'Your application has been submitted!');
       setIsApplyOpen(false);
       queryClient.invalidateQueries({ queryKey: ['myApplicationsCheck'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Failed to submit application');
+      toast.error(err.response?.data?.message || 'Failed to submit application.');
     },
   });
 
   const handleApplyClick = () => {
     if (!isAuthenticated) {
-      toast.error('Please log in as a candidate to apply.');
+      toast.error('Please sign in to apply for this job.');
       navigate(`/login?returnUrl=/jobs/${jobId}`);
       return;
     }
 
     if (user?.role !== 'candidate') {
-      toast.error('Only candidate user profiles can submit applications.');
+      toast.error('Only candidate accounts can submit applications.');
       return;
     }
 
@@ -167,13 +167,13 @@ export default function JobDetailPage() {
 
   const handleBookmarkToggle = () => {
     if (!isAuthenticated) {
-      toast.error('Please log in as a candidate to save job openings.');
+      toast.error('Please sign in to save jobs.');
       navigate(`/login?returnUrl=/jobs/${jobId}`);
       return;
     }
 
     if (user?.role !== 'candidate') {
-      toast.error('Only candidate user profiles can save job positions.');
+      toast.error('Only candidate accounts can save jobs.');
       return;
     }
 
@@ -218,10 +218,10 @@ export default function JobDetailPage() {
           <AlertTriangle className="w-10 h-10 text-rose-500 animate-bounce" />
           <div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-              Failed to load job profile
+              We couldn&apos;t load this job posting
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              This job posting may have been archived, soft-deleted, or the link has expired.
+              This job posting may have closed, been removed, or is temporarily unavailable.
             </p>
           </div>
           <button
@@ -230,7 +230,7 @@ export default function JobDetailPage() {
             type="button"
           >
             <RotateCw className="w-4 h-4" />
-            <span>Retry connection</span>
+            <span>Try Again</span>
           </button>
         </div>
       </PageContainer>

@@ -84,8 +84,8 @@ export default function NotificationsPage() {
     <PageContainer>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
-          title="Notification Center"
-          description="Track status updates, interview schedules, and evaluation feedback alerts."
+          title="Notifications"
+          description="Stay updated on application progress, interview schedules, and feedback."
         />
 
         {unreadCount > 0 && (
@@ -146,10 +146,10 @@ export default function NotificationsPage() {
           <div className="border border-dashed border-slate-205 dark:border-slate-800 rounded-2xl p-12 text-center space-y-3 bg-slate-50/20 dark:bg-slate-950/5">
             <Inbox className="w-10 h-10 text-slate-350 mx-auto" />
             <h4 className="text-sm font-bold text-slate-805 dark:text-slate-200">
-              You&apos;re all caught up 🎉
+              You&apos;re all caught up! 🎉
             </h4>
             <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs mx-auto leading-relaxed">
-              No notifications found matching this list filter. New status changes will appear here instantly.
+              No new notifications right now. Important updates will appear here automatically.
             </p>
           </div>
         ) : (

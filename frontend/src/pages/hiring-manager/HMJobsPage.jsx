@@ -78,10 +78,10 @@ export default function HMJobsPage() {
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center">
           <AlertTriangle className="w-12 h-12 text-rose-500 animate-bounce" />
           <h3 className="text-base font-bold text-slate-805 dark:text-slate-100">
-            Failed to Load Jobs
+            We couldn&apos;t load jobs
           </h3>
           <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-            Could not fetch job postings for your department. Verify your network or department details.
+            Please check your connection and try again.
           </p>
           <button
             onClick={() => refetch()}
@@ -98,8 +98,8 @@ export default function HMJobsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="My Jobs Directory"
-        description="Assigned job listings currently active in your department."
+        title="Department Jobs"
+        description="Active job openings assigned to your department."
         badge={<Badge label={`${user?.department || 'Department'}`} variant="purple" />}
       />
 
@@ -114,7 +114,7 @@ export default function HMJobsPage() {
           <Inbox className="w-10 h-10 text-slate-350 mx-auto" />
           <h4 className="text-sm font-bold text-slate-805 dark:text-slate-200">No Jobs Assigned</h4>
           <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs mx-auto">
-            No published roles match the {user?.department || 'assigned'} department criteria.
+            No active jobs are currently assigned to the {user?.department || 'your'} department.
           </p>
         </div>
       ) : (

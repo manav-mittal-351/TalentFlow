@@ -191,7 +191,7 @@ export default function InterviewsPage() {
         <div className="p-6 rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/10 flex flex-col items-center justify-center text-center gap-3 max-w-md mx-auto">
           <AlertTriangle className="w-8 h-8 text-rose-500 animate-pulse" />
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-            Failed to load interview schedule
+            We couldn&apos;t load your interview schedule
           </h3>
           <button
             onClick={() => refetch()}
@@ -199,19 +199,19 @@ export default function InterviewsPage() {
             type="button"
           >
             <RotateCw className="w-3.5 h-3.5" />
-            <span>Retry connection</span>
+            <span>Try Again</span>
           </button>
         </div>
       ) : filteredInterviews.length === 0 ? (
         <div className="p-10 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-3 bg-white dark:bg-slate-900 max-w-lg mx-auto shadow-sm">
           <Calendar className="w-10 h-10 text-slate-400 mx-auto" />
           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            No Interviews Scheduled
+            No Interviews Scheduled Yet
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {searchQuery || statusFilter
-              ? 'Try modifying your search filter selections.'
-              : 'Schedule interview rounds directly from active candidate profiles in your job pipelines.'}
+              ? 'No interviews match your search criteria. Try clearing your filters.'
+              : 'Schedule interview sessions directly from candidate application profiles.'}
           </p>
         </div>
       ) : (

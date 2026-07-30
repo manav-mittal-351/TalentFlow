@@ -170,10 +170,10 @@ export default function CandidateApplicationsPage() {
             <AlertTriangle className="w-9 h-9 text-rose-500 animate-bounce" />
             <div>
               <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
-                Failed to load applications
+                We couldn&apos;t load your applications
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Could not connect to the database. Try reloading the connection.
+                Please check your connection and try again.
               </p>
             </div>
             <button
@@ -182,7 +182,7 @@ export default function CandidateApplicationsPage() {
               type="button"
             >
               <RotateCw className="w-3.5 h-3.5" />
-              Retry Connection
+              Try Again
             </button>
           </div>
         ) : isLoading ? (
@@ -192,10 +192,10 @@ export default function CandidateApplicationsPage() {
             <Inbox className="w-10 h-10 text-slate-350 dark:text-slate-650" />
             <div>
               <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
-                No applications found
+                Nothing to show yet
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                You haven&apos;t applied to any roles matching these filters. Try adjusting your stages dropdown options.
+                You haven&apos;t applied for any jobs matching these filters yet. Explore opportunities and submit your application!
               </p>
             </div>
             {applicationsList.length === 0 ? (
@@ -203,7 +203,7 @@ export default function CandidateApplicationsPage() {
                 to={ROUTES.JOBS}
                 className="inline-flex items-center gap-1 px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all focus-ring shadow-md hover:scale-[1.01] mt-2"
               >
-                Find job openings
+                Explore Open Roles
               </Link>
             ) : (
               <button

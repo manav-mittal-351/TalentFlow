@@ -65,15 +65,15 @@ function ErrorState({ onRetry }) {
       <div className="p-8 rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/10 flex flex-col items-center gap-4 max-w-sm text-center shadow-sm">
         <AlertTriangle className="w-10 h-10 text-rose-500 animate-bounce" />
         <div>
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Failed to load dashboard</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Could not reach the server. Please try again.</p>
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">We couldn&apos;t load your dashboard</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Please check your connection and try again.</p>
         </div>
         <button
           onClick={onRetry}
           className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-200 transition-all focus-ring"
         >
           <RotateCw className="w-3.5 h-3.5" />
-          Retry
+          Try Again
         </button>
       </div>
     </div>

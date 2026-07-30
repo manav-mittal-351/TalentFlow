@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       // Update AuthContext session state
       login(token, user);
-      toast.success('Successfully logged in');
+      toast.success('Signed in successfully.');
 
       // Route redirection matching state history or role defaults
       const from = location.state?.from?.pathname;
@@ -54,7 +54,7 @@ export default function LoginPage() {
       navigate(targetPath, { replace: true });
     } catch (err) {
       console.error('Login request failed:', err);
-      const errMsg = err.response?.data?.message || 'Invalid email or password';
+      const errMsg = err.response?.data?.message || 'Incorrect email address or password. Please try again.';
       setServerError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -74,7 +74,7 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-            Welcome back! Enter credentials to access your dashboard.
+            Welcome back! Enter your email and password to sign in.
           </p>
         </div>
 

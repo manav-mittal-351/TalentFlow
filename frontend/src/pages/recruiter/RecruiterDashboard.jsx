@@ -156,10 +156,10 @@ export default function RecruiterDashboard() {
           <AlertTriangle className="w-10 h-10 text-rose-500 animate-bounce" />
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-              Failed to load Recruiter Dashboard
+              We couldn&apos;t load your dashboard
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              The query pipeline encountered connection drops or authentication issues. Check server logs.
+              Please check your internet connection and try again.
             </p>
           </div>
           <button
@@ -168,7 +168,7 @@ export default function RecruiterDashboard() {
             type="button"
           >
             <RotateCw className="w-4 h-4" />
-            <span>Retry connection</span>
+            <span>Try Again</span>
           </button>
         </div>
       </PageContainer>
@@ -182,7 +182,7 @@ export default function RecruiterDashboard() {
       className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md transition-all focus-ring hover:scale-[1.02]"
     >
       <Plus className="w-4 h-4 shrink-0" />
-      <span>Create Job</span>
+      <span>Create Job Opening</span>
     </Link>
   );
 
@@ -237,7 +237,7 @@ export default function RecruiterDashboard() {
                 <span>Application Pipeline Breakdown</span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Distribution of candidate pipelines across the recruitment stages.
+                Distribution of candidate applications across recruitment stages.
               </p>
             </div>
 
@@ -323,10 +323,10 @@ export default function RecruiterDashboard() {
                 <Inbox className="w-10 h-10 text-slate-400 mx-auto" />
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    No Pipeline Data
+                    No Pipeline Data Yet
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-450 max-w-xs mx-auto leading-relaxed">
-                    No active applications have been submitted to your job posts yet. Publish a job posting or register profiles to populate graphs.
+                    You haven&apos;t received any applications yet. Create and publish job openings to start building your candidate pipeline.
                   </p>
                 </div>
               </div>

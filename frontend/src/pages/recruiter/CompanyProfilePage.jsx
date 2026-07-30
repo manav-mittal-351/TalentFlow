@@ -67,11 +67,11 @@ export default function CompanyProfilePage() {
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success(data?.message || 'Company profile updated successfully');
+      toast.success(data?.message || 'Company details saved.');
       queryClient.invalidateQueries({ queryKey: ['companyProfile'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Failed to update company profile');
+      toast.error(err.response?.data?.message || 'Failed to save company details.');
     },
   });
 
@@ -83,8 +83,8 @@ export default function CompanyProfilePage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Company Registry Profile"
-        description="Manage organization details displayed on public job postings and candidate views."
+        title="Company Profile"
+        description="Manage organization details displayed on job postings and public pages."
       />
 
       {isLoading ? (
@@ -96,7 +96,7 @@ export default function CompanyProfilePage() {
         <div className="p-6 rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/10 flex flex-col items-center justify-center text-center gap-3 max-w-md mx-auto my-8">
           <AlertTriangle className="w-8 h-8 text-rose-500 animate-pulse" />
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-            Failed to load company profile
+            We couldn&apos;t load company details
           </h3>
           <button
             onClick={() => refetch()}
@@ -104,7 +104,7 @@ export default function CompanyProfilePage() {
             type="button"
           >
             <RotateCw className="w-3.5 h-3.5" />
-            <span>Retry connection</span>
+            <span>Try Again</span>
           </button>
         </div>
       ) : (
@@ -211,7 +211,7 @@ export default function CompanyProfilePage() {
                 className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-transform hover:scale-[1.01] focus-ring"
               >
                 <Save className="w-4 h-4" />
-                <span>{updateMutation.isPending ? 'Saving...' : 'Save Profile Updates'}</span>
+                <span>{updateMutation.isPending ? 'Saving...' : 'Save Changes'}</span>
               </button>
             </div>
           </div>

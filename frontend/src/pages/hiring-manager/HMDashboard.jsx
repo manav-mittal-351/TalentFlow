@@ -68,10 +68,10 @@ export default function HMDashboard() {
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center">
           <AlertTriangle className="w-12 h-12 text-rose-500 animate-bounce" />
           <h3 className="text-base font-bold text-slate-805 dark:text-slate-100">
-            Failed to Load Dashboard
+            We couldn&apos;t load your dashboard
           </h3>
           <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-            There was a connection issue loading your hiring manager dashboard. Check your department assignments.
+            Please check your connection and try again.
           </p>
           <button
             onClick={() => refetch()}
@@ -152,9 +152,9 @@ export default function HMDashboard() {
           ) : candidatesPending.length === 0 ? (
             <div className="border border-dashed border-slate-205 dark:border-slate-800 rounded-2xl p-8 text-center space-y-2 bg-slate-50/20 dark:bg-slate-950/5">
               <Inbox className="w-8 h-8 text-slate-350 mx-auto" />
-              <h4 className="text-xs font-bold text-slate-805 dark:text-slate-200">All caught up!</h4>
+              <h4 className="text-xs font-bold text-slate-805 dark:text-slate-200">All caught up! 🎉</h4>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-xs mx-auto">
-                No candidate scorecards are pending your evaluation in the {user?.department || 'assigned'} department.
+                No candidates are currently pending review in your department.
               </p>
             </div>
           ) : (

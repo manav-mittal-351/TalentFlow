@@ -92,10 +92,10 @@ export default function SavedJobsPage() {
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center">
           <AlertTriangle className="w-12 h-12 text-rose-500 animate-bounce" />
           <h3 className="text-base font-bold text-slate-805 dark:text-slate-100">
-            Failed to Load Bookmarks
+            We couldn&apos;t load your saved jobs
           </h3>
           <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-            There was a connection issue fetching your saved job listings. Check your internet connection.
+            Please check your internet connection and try again.
           </p>
           <button
             onClick={() => refetch()}
@@ -112,8 +112,8 @@ export default function SavedJobsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Saved Job Postings"
-        description="Review, apply, or manage job openings you've bookmarked for later."
+        title="Saved Jobs"
+        description="View and manage job opportunities you have bookmarked for later."
       />
 
       {isLoading ? (
@@ -127,13 +127,13 @@ export default function SavedJobsPage() {
           <Bookmark className="w-10 h-10 text-slate-350 mx-auto" />
           <h4 className="text-sm font-bold text-slate-805 dark:text-slate-200">No Saved Jobs Yet</h4>
           <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs mx-auto leading-relaxed">
-            Bookmarks help you track roles you are interested in applying for later.
+            You haven&apos;t saved any jobs yet. Bookmark job postings to view them here later.
           </p>
           <Link
             to="/jobs"
             className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all active:scale-98"
           >
-            Browse Active Jobs
+            Explore Open Roles
           </Link>
         </div>
       ) : (

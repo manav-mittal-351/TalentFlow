@@ -56,7 +56,7 @@ export const ApplyModal = React.memo(function ApplyModal({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (resumeMode === 'upload' && !file) {
-      setFileError('A resume document is required to submit your application.');
+      setFileError('Please select a resume file to submit your application.');
       return;
     }
 
@@ -86,7 +86,7 @@ export const ApplyModal = React.memo(function ApplyModal({
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
             <div>
               <h3 id="modal-title" className="text-sm font-bold uppercase tracking-wider text-indigo-650 dark:text-indigo-400">
-                Submit Application
+                Apply for Position
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                 Apply to <span className="font-bold text-slate-700 dark:text-slate-250">{job.title}</span> at {job.company?.name || 'TalentFlow'}
@@ -261,10 +261,10 @@ export const ApplyModal = React.memo(function ApplyModal({
                 {isPending ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Submitting...</span>
+                    <span>Sending application...</span>
                   </>
                 ) : (
-                  <span>Submit Application</span>
+                  <span>Apply Now</span>
                 )}
               </button>
             </div>
