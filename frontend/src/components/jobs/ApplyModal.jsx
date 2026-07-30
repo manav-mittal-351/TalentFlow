@@ -8,6 +8,7 @@ import { X, Upload, FileText, AlertTriangle, Loader2, Sparkles } from 'lucide-re
 export const ApplyModal = React.memo(function ApplyModal({
   job,
   user,
+  isReapplying = false,
   onClose,
   onSubmit,
   isPending = false,
@@ -86,7 +87,7 @@ export const ApplyModal = React.memo(function ApplyModal({
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/80">
             <div>
               <h3 id="modal-title" className="text-sm font-bold uppercase tracking-wider text-indigo-650 dark:text-indigo-400">
-                Apply for Position
+                {isReapplying ? 'Apply Again' : 'Apply for Position'}
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                 Apply to <span className="font-bold text-slate-700 dark:text-slate-250">{job.title}</span> at {job.company?.name || 'TalentFlow'}
@@ -261,10 +262,10 @@ export const ApplyModal = React.memo(function ApplyModal({
                 {isPending ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Sending application...</span>
+                    <span>{isReapplying ? 'Submitting...' : 'Sending application...'}</span>
                   </>
                 ) : (
-                  <span>Apply Now</span>
+                  <span>{isReapplying ? 'Apply Again' : 'Apply Now'}</span>
                 )}
               </button>
             </div>

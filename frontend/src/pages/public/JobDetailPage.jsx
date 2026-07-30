@@ -105,14 +105,24 @@ export default function JobDetailPage() {
 
   const isSaved = savedJobIds.includes(jobId);
 
-  // Identify if candidate has already submitted an application
-  const hasApplied = useMemo(() => {
+  // Identify active application vs withdrawn application
+  const activeApplication = useMemo(() => {
+    const apps = myApplicationsRes || [];
+    return apps.find((app) => {
+      const appId = app.job?._id || app.job;
+      return String(appId) === String(jobId) && app.status !== 'withdrawn';
+    });
+  }, [myApplicationsRes, jobId]);
+
+  const hasWithdrawnApp = useMemo(() => {
     const apps = myApplicationsRes || [];
     return apps.some((app) => {
       const appId = app.job?._id || app.job;
-      return String(appId) === String(jobId);
+      return String(appId) === String(jobId) && app.status === 'withdrawn';
     });
   }, [myApplicationsRes, jobId]);
+
+  const hasActiveApplication = Boolean(activeApplication);
 
   // 5. Mutation: Toggle Bookmark (Save/Unsave Job)
   const bookmarkMutation = useMutation({
@@ -417,7 +427,7 @@ export default function JobDetailPage() {
             </div>
 
             {/* Conditional Button Actions */}
-            {hasApplied ? (
+            {hasActiveApplication ? (
               <button
                 disabled
                 className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border border-emerald-100 dark:border-emerald-900/30 text-xs font-bold rounded-xl disabled:opacity-80"
@@ -455,7 +465,7 @@ export default function JobDetailPage() {
                 className="w-full inline-flex items-center justify-center gap-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-all hover:scale-[1.01] focus-ring"
                 type="button"
               >
-                <span>Apply Now</span>
+                <span>{hasWithdrawnApp ? 'Apply Again' : 'Apply Now'}</span>
               </button>
             )}
           </div>
@@ -471,8 +481,9 @@ export default function JobDetailPage() {
         <ApplyModal
           job={job}
           user={userProfile || user}
+          isReapplying={hasWithdrawnApp}
           onClose={() => setIsApplyOpen(false)}
-          onSubmit={(fd) => applyMutation.mutate(fd)}
+          onSubmit={(formData) => applyMutation.mutate(formData)}
           isPending={applyMutation.isPending}
         />
       )}

@@ -210,6 +210,31 @@ export default function CandidateDetailPage() {
     });
   }, []);
 
+  const candidateId = application?.candidate?._id || application?.candidate;
+  const jobId = application?.job?._id || application?.job;
+
+  // 5. Query candidate's application history for this job
+  const { data: candidateJobApps } = useQuery({
+    queryKey: ['candidateJobAppsHistory', candidateId, jobId],
+    queryFn: async () => {
+      if (!jobId || !candidateId) return [];
+      const response = await api.get(`/applications/job/${jobId}`, { params: { limit: 100 } });
+      const allApps = response.data?.data || [];
+      return allApps.filter((a) => String(a.candidate?._id || a.candidate) === String(candidateId));
+    },
+    enabled: Boolean(candidateId && jobId),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const previousAttempts = useMemo(() => {
+    if (!candidateJobApps || candidateJobApps.length <= 1) return [];
+    return candidateJobApps
+      .filter((a) => a._id !== applicationId)
+      .sort((a, b) => new Date(b.appliedAt || b.createdAt) - new Date(a.appliedAt || a.createdAt));
+  }, [candidateJobApps, applicationId]);
+
+  const isReapplication = previousAttempts.length > 0;
+
   // Format stages label
   const formatStage = (st) => {
     return st.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -246,7 +271,7 @@ export default function CandidateDetailPage() {
           <AlertTriangle className="w-10 h-10 text-rose-500 animate-bounce" />
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-              Failed to load Candidate details
+              We couldn&apos;t load candidate details
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Encountered API failures or the selected application details do not exist.
@@ -261,7 +286,7 @@ export default function CandidateDetailPage() {
             type="button"
           >
             <RotateCw className="w-4 h-4" />
-            <span>Retry connection</span>
+            <span>Try Again</span>
           </button>
         </div>
       </PageContainer>
@@ -275,7 +300,16 @@ export default function CandidateDetailPage() {
     <PageContainer>
       {/* Action Header */}
       <PageHeader
-        title={candidate?.name || 'Candidate profile'}
+        title={
+          <div className="flex items-center gap-2.5">
+            <span>{candidate?.name || 'Candidate profile'}</span>
+            {isReapplication && (
+              <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
+                Reapplied
+              </span>
+            )}
+          </div>
+        }
         description={
           <div className="flex items-center gap-1 flex-wrap">
             <span>Applying for</span>
@@ -359,6 +393,33 @@ export default function CandidateDetailPage() {
 
           {/* Timeline and History logs */}
           <StatusTimeline statusHistory={statusHistory} currentStatus={status} />
+
+          {/* Prior Application Attempts History */}
+          {previousAttempts.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-500" />
+                <span>Previous Application History ({previousAttempts.length})</span>
+              </h3>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                {previousAttempts.map((prevApp, index) => (
+                  <div key={prevApp._id} className="py-2.5 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        Attempt #{previousAttempts.length - index}
+                      </span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">
+                        Applied {prevApp.appliedAt ? new Date(prevApp.appliedAt).toLocaleDateString() : 'Previously'}
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                      {prevApp.status?.replace('_', ' ')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar Columns */}

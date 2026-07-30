@@ -270,10 +270,18 @@ export default function ApplicationDetailPage() {
                 </button>
               </div>
             ) : isWithdrawn ? (
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-150 dark:border-slate-850 rounded-xl text-center leading-relaxed">
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  This application was withdrawn and is no longer being reviewed.
-                </span>
+              <div className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-150 dark:border-slate-850 rounded-xl space-y-3 leading-relaxed">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  You previously withdrew your application for this job. If the position is still accepting applications, you can apply again.
+                </p>
+                {job?._id && (
+                  <Link
+                    to={`/jobs/${job._id}`}
+                    className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all hover:scale-[1.01] focus-ring shadow-sm"
+                  >
+                    <span>Apply Again</span>
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-150 dark:border-slate-850 rounded-xl text-center leading-relaxed">

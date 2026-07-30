@@ -14,6 +14,7 @@ import { paginate, buildPagination } from '../utils/paginate.js';
 import { createNotification }        from './notification.service.js';
 
 import { extractSkillsFromText } from './resumeParser.service.js';
+// Module 4: Candidate Reapplication & Pipeline Services
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -136,9 +137,32 @@ export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedRes
     }
   }
 
-  // 3. Create application — the compound unique index (job+candidate) will throw
-  //    a Mongoose duplicate key error (code 11000) if already applied.
-  //    errorHandler converts it to 409 ALREADY_APPLIED below.
+  // 3. Check for existing active application for this job
+  const activeApp = await Application.findOne({
+    job:       jobId,
+    candidate: candidateId,
+    status:    { $in: ['applied', 'under_review', 'shortlisted', 'interview', 'offer', 'hired'] },
+    isDeleted: false,
+  });
+
+  if (activeApp) {
+    const conflict = new Error('You already have an active application for this job');
+    conflict.statusCode = 409;
+    conflict.errorCode  = 'ALREADY_APPLIED';
+    throw conflict;
+  }
+
+  // 4. Check if candidate previously withdrew an application for this job
+  const previousWithdrawnApp = await Application.findOne({
+    job:       jobId,
+    candidate: candidateId,
+    status:    'withdrawn',
+    isDeleted: false,
+  });
+
+  const isReapplication = Boolean(previousWithdrawnApp);
+
+  // 5. Create new application record — partial unique index guards against duplicate active applications
   try {
     const application = await Application.create({
       job:       jobId,
@@ -156,14 +180,17 @@ export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedRes
     // Increment job application count (denormalized stat)
     await Job.findByIdAndUpdate(jobId, { $inc: { applicationCount: 1 } });
 
-    // Send notification to recruiter (job.createdBy)
     const applicant = await User.findById(candidateId).select('name');
+
+    // Send notification to recruiter (job.createdBy)
     await createNotification({
       recipient:  job.createdBy,
       sender:     candidateId,
-      title:      'New Application Received',
+      title:      isReapplication ? 'Candidate Reapplied' : 'New Application Received',
       type:       'application_received',
-      message:    `${applicant?.name || 'A candidate'} applied for "${job.title}"`,
+      message:    isReapplication
+        ? `${applicant?.name || 'A candidate'} has submitted a new application for "${job.title}"`
+        : `${applicant?.name || 'A candidate'} applied for "${job.title}"`,
       link:       `/recruiter/candidates/${application._id}`,
       icon:       'info',
       relatedJob: job._id,
@@ -184,15 +211,13 @@ export const applyToJob = async (jobId, candidateId, coverNote = '', uploadedRes
     });
 
     // Strip recruiterNotes from create() result.
-    // select:false blocks it in find() queries but create() returns the full doc.
-    // The candidate should never see recruiterNotes in any response.
     const result = application.toObject();
     delete result.recruiterNotes;
     return result;
   } catch (err) {
     if (err.code === 11000) {
-      // 409 Conflict — compound unique index (job + candidate) violated
-      const conflict = new Error('You have already applied to this job');
+      // 409 Conflict — partial unique index race condition guard
+      const conflict = new Error('You already have an active application for this job');
       conflict.statusCode = 409;
       conflict.errorCode  = 'ALREADY_APPLIED';
       throw conflict;
@@ -394,7 +419,7 @@ export const getJobApplicationsHM = async (jobId, hmId, query) => {
     err.statusCode = 404; err.errorCode = 'JOB_NOT_FOUND'; throw err;
   }
 
-  if (hm?.department && job.department && hm.department !== job.department) {
+  if (!hm?.department || (job.department && hm.department !== job.department)) {
     throwForbidden('You can only view applications for jobs in your department');
   }
 
@@ -449,7 +474,7 @@ export const getApplicationById = async (applicationId, user) => {
   if (user.role === 'hiring_manager') {
     const hm  = await User.findById(user.id).select('department');
     const job = application.job;
-    if (hm?.department && job?.department && hm.department !== job.department) {
+    if (!hm?.department || (job?.department && hm.department !== job.department)) {
       throwForbidden('You can only view applications for jobs in your department');
     }
   }

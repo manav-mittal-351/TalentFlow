@@ -101,9 +101,26 @@ const applicationSchema = new Schema(
   }
 );
 
-// ─── Indexes ──────────────────────────────────────────────────────────────────
-// Doc 04: job + candidate compound unique — DB-level duplicate application prevention
-applicationSchema.index({ job: 1, candidate: 1 }, { unique: true });
+// Partial unique index — candidate can only have 1 active (non-withdrawn/non-rejected) application per job
+applicationSchema.index(
+  { job: 1, candidate: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      isDeleted: false,
+      status: {
+        $in: [
+          'applied',
+          'under_review',
+          'shortlisted',
+          'interview',
+          'offer',
+          'hired',
+        ],
+      },
+    },
+  }
+);
 // Doc 04: job + status — recruiter pipeline filter (job X → shortlisted candidates)
 applicationSchema.index({ job: 1, status: 1 });
 // Doc 04: candidate — candidate dashboard queries

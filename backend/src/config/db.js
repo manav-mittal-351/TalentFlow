@@ -6,6 +6,7 @@
 import dns from 'dns';
 import mongoose from 'mongoose';
 import { env } from './env.js';
+import Application from '../models/Application.model.js';
 
 // Override the system DNS resolver with Google's public DNS servers.
 // This is required when the system DNS (e.g. Cloudflare WARP) blocks
@@ -22,6 +23,12 @@ export const connectDB = async () => {
     });
 
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+    // Sync Application indexes so partial unique index replaces old index
+    try {
+      await Application.syncIndexes();
+    } catch (e) {
+      console.log('Index sync info:', e.message);
+    }
   } catch (err) {
     console.error('❌ MongoDB connection failed:', err.message);
     // Re-throw so server.js can handle the exit

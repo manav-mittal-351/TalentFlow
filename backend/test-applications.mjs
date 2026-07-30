@@ -51,8 +51,9 @@ const RECRUITER2_EMAIL = `r2_${ts}@test.com`;
 const CANDIDATE_EMAIL  = `c_${ts}@test.com`;
 const CANDIDATE2_EMAIL = `c2_${ts}@test.com`;
 const HM_EMAIL         = `hm_${ts}@test.com`;
+const HM_DESIGN_EMAIL  = `hmd_${ts}@test.com`;
 
-let rToken = '', r2Token = '', cToken = '', c2Token = '', hmToken = '';
+let rToken = '', r2Token = '', cToken = '', c2Token = '', hmToken = '', hmDesignToken = '';
 let rId = '', cId = '', c2Id = '';
 let jobId = '', closedJobId = '', expiredJobId = '';
 let app1Id = '', app2Id = '';
@@ -60,12 +61,13 @@ let app1Id = '', app2Id = '';
 console.log('\n  Setting up test users and jobs...');
 
 {
-  const [r, r2, c, c2, hm] = await Promise.all([
+  const [r, r2, c, c2, hm, hmDesign] = await Promise.all([
     req('POST', '/auth/register', { name: 'Recruiter A',   email: RECRUITER_EMAIL,  password: 'pass1234!', role: 'recruiter' }),
     req('POST', '/auth/register', { name: 'Recruiter B',   email: RECRUITER2_EMAIL, password: 'pass1234!', role: 'recruiter' }),
     req('POST', '/auth/register', { name: 'Candidate A',   email: CANDIDATE_EMAIL,  password: 'pass1234!', role: 'candidate' }),
     req('POST', '/auth/register', { name: 'Candidate B',   email: CANDIDATE2_EMAIL, password: 'pass1234!', role: 'candidate' }),
-    req('POST', '/auth/register', { name: 'Hiring Mgr A',  email: HM_EMAIL,         password: 'pass1234!', role: 'hiring_manager' }),
+    req('POST', '/auth/register', { name: 'Hiring Mgr A',  email: HM_EMAIL,         password: 'pass1234!', role: 'hiring_manager', department: 'Engineering' }),
+    req('POST', '/auth/register', { name: 'Hiring Mgr B',  email: HM_DESIGN_EMAIL,  password: 'pass1234!', role: 'hiring_manager', department: 'Design' }),
   ]);
 
   rToken  = r.data.data?.token;  rId  = r.data.data?.user?._id;
@@ -73,6 +75,7 @@ console.log('\n  Setting up test users and jobs...');
   cToken  = c.data.data?.token;  cId  = c.data.data?.user?._id;
   c2Token = c2.data.data?.token; c2Id = c2.data.data?.user?._id;
   hmToken = hm.data.data?.token;
+  hmDesignToken = hmDesign.data.data?.token;
 
   if (!rToken || !cToken || !hmToken) {
     console.error('  ❌ Setup failed — users not registered'); process.exit(1);
@@ -492,16 +495,15 @@ if (app1Id) {
   else fail('Candidate → GET /:id → 403', `${status}`);
 }
 
-// 28. HM cannot access /:id (different dept)
+// 28. HM cannot access /:id (different dept — Design HM viewing Engineering job)
 if (app1Id) {
   const { status, data } = await req('GET', `/applications/${app1Id}`,
     null,
-    { Authorization: `Bearer ${hmToken}` }
+    { Authorization: `Bearer ${hmDesignToken}` }
   );
-  // HM has no department set → FORBIDDEN_ROLE
   if (status === 403)
-    pass('HM with no dept → GET /:id → 403');
-  else fail('HM no dept → GET /:id → 403', `${status}: ${JSON.stringify(data)}`);
+    pass('HM from different dept → GET /:id → 403 FORBIDDEN_ROLE');
+  else fail('HM different dept → GET /:id → 403', `${status}: ${JSON.stringify(data)}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -618,15 +620,30 @@ if (app1Id) {
   else fail('Cross-candidate withdraw blocked → 404', `${status}: ${JSON.stringify(data)}`);
 }
 
-// 39. Recruiter attempts to set hired on a withdrawn app (no guard needed — just verify)
-if (app1Id) {
-  const { status } = await req('PATCH', `/applications/${app1Id}/status`,
-    { status: 'hired' },
-    { Authorization: `Bearer ${rToken}` }
-  );
-  // Service doesn't block this in V1 — withdrawn apps can technically be moved back
-  // Document as Tech Debt; V1 just records the status change in history
-  pass('Recruiter can update status on withdrawn app (V1 — documented Tech Debt)', `${status}`);
+// 39. Candidate A reapplies to the same job after withdrawing → 201 Created (new record)
+let app3Id = '';
+{
+  const { status, data } = await applyWithResume(jobId, cToken, 'I am reapplying with updated experience.');
+  if (status === 201 && data.success && data.data?._id) {
+    app3Id = data.data._id;
+    if (app3Id !== app1Id) {
+      pass('Candidate A reapplied after withdrawal → 201 (distinct new Application record created)', `app3Id=${app3Id}`);
+    } else {
+      fail('Reapplication should create a distinct new record', `Got same id: ${app3Id}`);
+    }
+  } else {
+    fail('Candidate A reapply after withdrawal → 201', `${status}: ${JSON.stringify(data)}`);
+  }
+}
+
+// 40. Candidate A tries to apply again while app3 is active → 409 ALREADY_APPLIED
+{
+  const { status, data } = await applyWithResume(jobId, cToken);
+  if (status === 409 && data.errorCode === 'ALREADY_APPLIED') {
+    pass('Duplicate apply while application is active → 409 ALREADY_APPLIED');
+  } else {
+    fail('Duplicate apply while active → 409 ALREADY_APPLIED', `${status}: ${JSON.stringify(data)}`);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -639,12 +656,12 @@ section('GET /applications/job/:jobId/hm — HM pipeline view');
   else fail('Recruiter /hm → 403', `${status}`);
 }
 
-// 41. HM with no department set → 403 FORBIDDEN_ROLE
+// 41. HM with different department → /hm → 403 FORBIDDEN_ROLE
 {
-  const { status, data } = await req('GET', `/applications/job/${jobId}/hm`, null, { Authorization: `Bearer ${hmToken}` });
+  const { status, data } = await req('GET', `/applications/job/${jobId}/hm`, null, { Authorization: `Bearer ${hmDesignToken}` });
   if (status === 403 && data.errorCode === 'FORBIDDEN_ROLE')
-    pass('HM with no dept → /hm → 403 FORBIDDEN_ROLE');
-  else fail('HM no dept → /hm → 403', `${status}: ${JSON.stringify(data)}`);
+    pass('HM from different dept → /hm → 403 FORBIDDEN_ROLE');
+  else fail('HM different dept → /hm → 403', `${status}: ${JSON.stringify(data)}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
