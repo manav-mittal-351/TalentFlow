@@ -429,3 +429,12 @@ export const updateInterviewStatus = async (interviewId, status, cancelledReason
     { path: 'interviewer', select: 'name department' },
   ]);
 };
+
+// ─── GET /interviews/hiring-managers — List hiring managers ──────────────────
+export const getHiringManagers = async () => {
+  return User.find({ role: 'hiring_manager', isDeleted: false })
+    .select('_id name email department')
+    .sort({ name: 1 })
+    .lean();
+};
+

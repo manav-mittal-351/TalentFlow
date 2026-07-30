@@ -1,12 +1,14 @@
 // ─── components/candidate/InterviewForm.jsx ───────────────────────────────────
 // Reusable interview scheduler form modal. Used for both scheduling and editing interviews.
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { XCircle, Loader2, Calendar, MapPin, AlignLeft, UserPlus } from 'lucide-react';
 import { INTERVIEW_FORMATS } from '../../constants/statuses.js';
+import api from '../../services/api.js';
 
 // Local Zod validation schema for scheduling interviews
 const interviewSchema = z.object({
@@ -19,10 +21,10 @@ const interviewSchema = z.object({
   }),
   location: z.string().max(300, { message: 'Location cannot exceed 300 characters' }).optional(),
   candidateInstructions: z.string().max(1000, { message: 'Instructions cannot exceed 1000 characters' }).optional(),
-  interviewerId: z.string().refine(
+  interviewerId: z.string().optional().transform((val) => (val ? val.trim() : '')).refine(
     (val) => !val || /^[0-9a-fA-F]{24}$/.test(val),
     { message: 'Interviewer ID must be a valid 24-character hexadecimal MongoDB ObjectId' }
-  ).optional().or(z.literal('')),
+  ),
 });
 
 export const InterviewForm = React.memo(function InterviewForm({
@@ -33,10 +35,24 @@ export const InterviewForm = React.memo(function InterviewForm({
   title = 'Schedule Interview Session',
   submitButtonText = 'Schedule Session',
 }) {
+  const [useCustomIdInput, setUseCustomIdInput] = useState(false);
+
+  // Fetch active hiring managers to populate dropdown
+  const { data: hiringManagers = [] } = useQuery({
+    queryKey: ['hiringManagersList'],
+    queryFn: async () => {
+      const response = await api.get('/interviews/hiring-managers');
+      return response.data?.data || [];
+    },
+    staleTime: 1000 * 60 * 5, // 5 min cache
+  });
+
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(interviewSchema),
@@ -49,11 +65,25 @@ export const InterviewForm = React.memo(function InterviewForm({
     },
   });
 
+  const selectedInterviewerId = watch('interviewerId');
+
   useEffect(() => {
     if (defaultValues) {
-      reset(defaultValues);
+      const rawId = defaultValues.interviewerId?._id || defaultValues.interviewerId || '';
+      reset({
+        ...defaultValues,
+        interviewerId: rawId,
+      });
     }
   }, [defaultValues, reset]);
+
+  const handleFormSubmit = (data) => {
+    const cleanData = {
+      ...data,
+      interviewerId: data.interviewerId && data.interviewerId.trim() ? data.interviewerId.trim() : undefined,
+    };
+    onSubmit(cleanData);
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -80,7 +110,7 @@ export const InterviewForm = React.memo(function InterviewForm({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-xs" noValidate>
+          <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 text-xs" noValidate>
             
             {/* Scheduled At Date/Time picker */}
             <div className="space-y-1.5">
@@ -147,22 +177,49 @@ export const InterviewForm = React.memo(function InterviewForm({
               )}
             </div>
 
-            {/* Interviewer ID (optional) */}
+            {/* Assigned Interviewer / Hiring Manager (Optional Dropdown + Custom ID) */}
             <div className="space-y-1.5">
-              <label htmlFor="interviewerId" className="font-bold text-slate-700 dark:text-slate-350 flex items-center gap-1">
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Interviewer User ID (Optional)</span>
-              </label>
-              <input
-                id="interviewerId"
-                type="text"
-                {...register('interviewerId')}
-                placeholder="e.g. 24-character hexadecimal MongoDB ID"
-                className={`w-full px-3 py-2 text-xs rounded-xl border bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus-ring ${
-                  errors.interviewerId ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'
-                }`}
-                aria-invalid={!!errors.interviewerId}
-              />
+              <div className="flex items-center justify-between">
+                <label htmlFor="interviewerSelect" className="font-bold text-slate-700 dark:text-slate-350 flex items-center gap-1">
+                  <UserPlus className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Assigned Interviewer / Hiring Manager (Optional)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setUseCustomIdInput(!useCustomIdInput)}
+                  className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  {useCustomIdInput ? 'Use Dropdown' : 'Enter Custom ID'}
+                </button>
+              </div>
+
+              {!useCustomIdInput ? (
+                <select
+                  id="interviewerSelect"
+                  value={selectedInterviewerId || ''}
+                  onChange={(e) => setValue('interviewerId', e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus-ring border-slate-200 dark:border-slate-800"
+                >
+                  <option value="">-- No Assigned Interviewer (Unassigned / Self-conducted) --</option>
+                  {hiringManagers.map((hm) => (
+                    <option key={hm._id} value={hm._id}>
+                      {hm.name} {hm.department ? `(${hm.department})` : ''} — {hm.email}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  id="interviewerId"
+                  type="text"
+                  {...register('interviewerId')}
+                  placeholder="Paste 24-character MongoDB User ObjectId"
+                  className={`w-full px-3 py-2 text-xs rounded-xl border bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus-ring ${
+                    errors.interviewerId ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'
+                  }`}
+                  aria-invalid={!!errors.interviewerId}
+                />
+              )}
+
               {errors.interviewerId && (
                 <p className="text-[11px] font-semibold text-rose-550 flex items-center gap-1">
                   <XCircle className="w-3.5 h-3.5" />

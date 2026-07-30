@@ -68,3 +68,14 @@ export const updateInterviewStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+// ─── GET /api/v1/interviews/hiring-managers ───────────────────────────────────
+export const getHiringManagers = async (req, res, next) => {
+  try {
+    const managers = await interviewService.getHiringManagers();
+    return success(res, 'Hiring managers fetched successfully', managers);
+  } catch (err) {
+    next(err);
+  }
+};
+

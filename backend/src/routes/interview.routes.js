@@ -25,6 +25,7 @@ import {
   getInterviewById,
   updateInterview,
   updateInterviewStatus,
+  getHiringManagers,
 } from '../controllers/interview.controller.js';
 import {
   createInterviewValidator,
@@ -37,6 +38,14 @@ import { verifyToken }    from '../middleware/verifyToken.js';
 import { authorizeRoles } from '../middleware/authorizeRoles.js';
 
 const router = Router();
+
+// ─── GET /api/v1/interviews/hiring-managers ─────────────────────────────────
+router.get(
+  '/hiring-managers',
+  verifyToken,
+  authorizeRoles('recruiter', 'hiring_manager'),
+  getHiringManagers
+);
 
 // ─── POST /api/v1/interviews — Recruiter schedule ────────────────────────────
 router.post(
