@@ -10,7 +10,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { registerSchema } from '../../utils/validators.js';
 import { ROUTES } from '../../constants/routes.js';
-import { ROLES } from '../../constants/roles.js';
+import { ROLES, DEPARTMENTS } from '../../constants/roles.js';
 import api from '../../services/api.js';
 import toast from 'react-hot-toast';
 import {
@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import Logo from '../../components/common/Logo.jsx';
 import { getRoleDashboard } from '../../utils/routePermissions.js';
-import { DEPARTMENTS } from '../../constants/roles.js';
 
 const ROLE_OPTIONS = [
   {
@@ -38,7 +37,6 @@ const ROLE_OPTIONS = [
     description: 'Apply for jobs, track applications, and manage your professional profile.',
     features: ['1-Click Job Applications', 'Real-time Status Timeline', 'Resume Profile Manager'],
     icon: User,
-    color: 'indigo',
   },
   {
     id: ROLES.RECRUITER,
@@ -47,7 +45,6 @@ const ROLE_OPTIONS = [
     description: 'Post jobs, review applications, manage candidates, and schedule interviews.',
     features: ['Vacancy & Job Manager', 'Kanban Candidate Pipeline', 'Interview Scheduler'],
     icon: Building,
-    color: 'cyan',
   },
   {
     id: ROLES.HIRING_MANAGER,
@@ -56,7 +53,6 @@ const ROLE_OPTIONS = [
     description: 'Review shortlisted candidates, participate in hiring decisions, and manage interviews.',
     features: ['Department Queue Scoping', 'Scorecard Evaluations', 'Interview Recommendations'],
     icon: UserCheck,
-    color: 'amber',
   },
 ];
 
@@ -141,48 +137,57 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-[80vh] px-4 py-12 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="flex-1 flex flex-col items-center justify-center min-h-[85vh] px-4 py-12 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
       
       {/* ── STEP 1: CHOOSE YOUR ROLE ── */}
       {step === 1 && (
-        <div className="w-full max-w-4xl space-y-8">
-          <div className="text-center space-y-2">
-            <Logo size="xl" showText={false} className="justify-center mb-3" />
-            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">
+        <div className="w-full max-w-5xl mx-auto space-y-8">
+          {/* Header Title Section */}
+          <div className="text-center space-y-2.5 max-w-xl mx-auto">
+            <Logo size="xl" showText={false} className="justify-center mb-2" />
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">
               Choose Your Account Type
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
               Select how you would like to use TalentFlow to get started.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+          {/* Role Cards Grid — Equal height cards with aligned buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch pt-2">
             {ROLE_OPTIONS.map((option) => {
               const Icon = option.icon;
               return (
                 <div
                   key={option.id}
-                  className="group relative p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm hover:shadow-md transition-all cursor-default flex flex-col justify-between"
+                  className="group relative h-full flex flex-col justify-between p-6 sm:p-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300 dark:hover:border-indigo-800/60 shadow-sm hover:shadow-md transition-all duration-200 cursor-default"
                 >
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform select-none">
-                      <Icon className="w-6 h-6" />
+                  {/* Upper Content Section */}
+                  <div className="flex-1 flex flex-col justify-between space-y-5">
+                    <div className="space-y-4">
+                      {/* Icon */}
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform shrink-0 select-none">
+                        <Icon className="w-6 h-6" />
+                      </div>
+
+                      {/* Title & Tagline */}
+                      <div className="space-y-0.5">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                          {option.title}
+                        </h3>
+                        <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">
+                          {option.tagline}
+                        </span>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed min-h-[2.5rem]">
+                        {option.description}
+                      </p>
                     </div>
 
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50">
-                        {option.title}
-                      </h3>
-                      <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mt-0.5">
-                        {option.tagline}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      {option.description}
-                    </p>
-
-                    <ul className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                    {/* Features List */}
+                    <ul className="space-y-2.5 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 mt-auto">
                       {option.features.map((feat, i) => (
                         <li key={i} className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-350 select-none">
                           <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
@@ -192,7 +197,8 @@ export default function RegisterPage() {
                     </ul>
                   </div>
 
-                  <div className="pt-6">
+                  {/* Bottom Action Button — Uniform vertical height across all cards */}
+                  <div className="pt-6 mt-auto shrink-0">
                     <button
                       type="button"
                       onClick={(e) => {
@@ -211,7 +217,8 @@ export default function RegisterPage() {
             })}
           </div>
 
-          <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-4">
+          {/* Footer Link */}
+          <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2">
             <span>Already have an account? </span>
             <Link
               to={ROUTES.LOGIN}
@@ -225,7 +232,7 @@ export default function RegisterPage() {
 
       {/* ── STEP 2: REGISTRATION FORM ── */}
       {step === 2 && (
-        <div className="w-full max-w-md space-y-6 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card transition-colors duration-200">
+        <div className="w-full max-w-md mx-auto space-y-6 bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-card transition-colors duration-200">
           
           <div className="flex items-center justify-between">
             <button
