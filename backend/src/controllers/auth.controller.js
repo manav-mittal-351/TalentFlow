@@ -20,8 +20,8 @@ import { success } from '../utils/apiResponse.js';
  */
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
-    const data = await registerUser({ name, email, password, role });
+    const { name, email, password, role, department } = req.body;
+    const data = await registerUser({ name, email, password, role, department });
     return success(res, 'Registration successful. Welcome to TalentFlow!', data, 201);
   } catch (err) {
     next(err); // forwarded to errorHandler.js

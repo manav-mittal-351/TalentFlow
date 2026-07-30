@@ -30,6 +30,14 @@ const safeUser = (user) => ({
  * @throws 409 EMAIL_ALREADY_EXISTS — if email is already in use
  */
 export const registerUser = async ({ name, email, password, role = 'candidate', department = null }) => {
+  const ALLOWED_ROLES = ['candidate', 'recruiter', 'hiring_manager'];
+  if (!ALLOWED_ROLES.includes(role)) {
+    const err = new Error(`Role must be one of: ${ALLOWED_ROLES.join(', ')}`);
+    err.statusCode = 400;
+    err.errorCode  = 'VALIDATION_ERROR';
+    throw err;
+  }
+
   // Check for duplicate email before hashing (faster fail path)
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {

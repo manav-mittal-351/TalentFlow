@@ -7,4 +7,7 @@ export const ROLES = {
   CANDIDATE:      'candidate',
 };
 
+export const DEPARTMENTS = ['Engineering', 'Design', 'Marketing', 'Sales', 'HR', 'Finance'];
+
 Object.freeze(ROLES);
+Object.freeze(DEPARTMENTS);
